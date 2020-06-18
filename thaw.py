@@ -23,6 +23,7 @@ Usage::
     --mi --minor-micro      apply minor and micro updates
 """
 import argparse
+from datetime import datetime as dt
 import subprocess
 import sys
 
@@ -32,13 +33,7 @@ from pypi_search import get_latest_version
 # SETTINGS -----------------------------------
 # --------------------------------------------
 
-pip_cmd = "pip3"
-
-check_cmd = "pip3 list --local --outdated"
-
-# err = sys.stderr.write
-# out = sys.stdout.write
-
+logfile = "thaw_log.txt"
 
 # --------------------------------------------
 # HELPERS ------------------------------------
@@ -103,15 +98,6 @@ def main():
     except FileNotFoundError:
         print("No requirements file found - please run thaw in the top level of your project")
     
-    # cmd_list = check_cmd.split(' ')
-    
-    # process = subprocess.Popen(cmd_list,
-    #                            stdout=subprocess.PIPE,
-    #                            stderr=subprocess.PIPE)
-    # stdout, stderr = process.communicate()
-    # outdated_versions_dict = dictify_pip_list(stdout)
-
-    # commented_requirements_text = ""
     scales = {
         "major": {
             "count":0,
@@ -126,6 +112,12 @@ def main():
             "libraries":[],
         }
     }
+    
+    log = open(logfile,"a+")
+     
+    report_time = f"pip-thaw {dt.now().strftime('%m-%d-%y %H:%M:%S')}\n"
+    report_body = ""
+    
     for line in requirements:
 
         if "==" in line:
@@ -134,28 +126,32 @@ def main():
             scale = version_change_scale(current_version,latest_version)
             if scale:
                 scales[scale]["count"] += 1
-            # print(f"{library:<20} | {scale} | {current_version:<10} | {latest_version:<10}")
+                report_body += f"\t*{library:<40} | {current_version} >> {latest_version}\n"
+            else:
+                report_body += f"\t{library:<41} | {current_version}\n"
+        else:
+            report_body += f'\t{line.strip():<41} | no version requirement\n'
 
-        # if current_version != latest_version:
-        #     printline = f"{library} - {outdated_versions_dict[library]['scale']} update required"
-        #     print(printline)
-        #     latest = outdated_versions_dict[library]["latest"]
-        #     if len(line) <= 50:
-        #         new_commented_line = f"{line.strip():<50}\t#{latest}\n"
-        #     else:
-        #         new_commented_line = f"{line.strip()}\t#{latest}\n"
-        #     commented_requirements_text += new_commented_line
-        # elif line.strip() != "-e .":
-        #     commented_requirements_text += line
-    print(f"{scales['major']['count'] + scales['minor']['count'] + scales['micro']['count']} TOTAL updates")
-    print(f"{scales['major']['count']} MAJOR updates")
-    print(f"{scales['minor']['count']} MINOR updates")
-    print(f"{scales['micro']['count']} MICRO updates")
+    report_summary = ""
+    major = scales['major']['count']
+    minor = scales['minor']['count']
+    micro = scales['micro']['count']
+    print(f"{major + minor + micro} TOTAL updates")
+    report_summary += f"{major + minor + micro} total updates: "
+    print(f"{major} MAJOR updates")
+    report_summary += f"{major} MAJOR updates, "
+    print(f"{minor} MINOR updates")
+    report_summary += f"{minor} MINOR updates, "
+    print(f"{micro} MICRO updates")
+    report_summary += f"{micro} MICRO updates\n"
+    
+    log.write(report_time)
+    log.write(report_summary)
+    log.write(report_body)
+    log.write("\n")
+    
     requirements.close()
-
-    # requirements = open("requirements.txt","w")
-    # requirements.write(commented_requirements_text)
-    # requirements.close()
+    log.close()
     
 if __name__ == "__main__":
     main()
