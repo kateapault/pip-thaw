@@ -21,4 +21,3 @@ def hacky_parse_for_package_title(html_string):
     text_end = inner_end + classname_start
     
     return html_string[text_start:text_end].strip()
-
