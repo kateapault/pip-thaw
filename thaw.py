@@ -110,7 +110,10 @@ def main():
             printline = f"{library} - {outdated_versions_dict[library]['scale']} update required"
             print(printline)
             latest = outdated_versions_dict[library]["latest"]
-            new_commented_line = f"{line.strip():<50}\t#{latest}\n"
+            if len(line) <= 50:
+                new_commented_line = f"{line.strip():<50}\t#{latest}\n"
+            else:
+                new_commented_line = f"{line.strip()}\t#{latest}\n"
             commented_requirements_text += new_commented_line
         elif line.strip() != "-e .":
             commented_requirements_text += line
