@@ -1,6 +1,8 @@
 # pip-thaw
 Update tool that:
 
+✅ uses only built-in Python libraries - no dependencies to download
+
 ✅ checks requirements.txt for outdated versions
 
 ❌ identifies files in the project that use these outdated versions
