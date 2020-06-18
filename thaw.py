@@ -91,25 +91,35 @@ def main():
         requirements = open("requirements.txt")
     except FileNotFoundError:
         print("No requirements file found - please run thaw in the top level of your project")
-
+    
     cmd_list = check_cmd.split(' ')
-    print(f"cmd_list: {cmd_list}")
+    # print(f"cmd_list: {cmd_list}")
     process = subprocess.Popen(cmd_list,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     outdated_versions_dict = dictify_pip_list(stdout)
     
-    print(outdated_versions_dict)
+    # print(outdated_versions_dict)
 
-    # for line in requirements:
-    #     if "==" in line:
-    #         print("***" + line)
-    #     else:
-    #         print("-x-" + line)
-
-        
+    commented_requirements_text = ""
+    
+    for line in requirements:
+        library = line.split("==")[0]
+        if library in outdated_versions_dict:
+            printline = f"{library} - {outdated_versions_dict[library]['scale']} update required"
+            print(printline)
+            latest = outdated_versions_dict[library]["latest"]
+            new_commented_line = f"{line.strip():<50}\t#{latest}\n"
+            commented_requirements_text += new_commented_line
+        elif line.strip() != "-e .":
+            commented_requirements_text += line
+            
     requirements.close()
 
+    requirements = open("requirements.txt","w")
+    requirements.write(commented_requirements_text)
+    requirements.close()
+    
 if __name__ == "__main__":
     main()
