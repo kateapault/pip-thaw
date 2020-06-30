@@ -3,21 +3,22 @@ import os
 def check_file_for_package(filename,package):
     '''
     inputs: str:filename, str:package (package name)
-    outputs: list containing line #s (not counting imports) that the package is explicity in
+    outputs: list containing line #s (not counting 'import x') that the package is explicity in
     '''
     f = open(filename)
     i = 0
-    imported = True
+    imported = False
     affected_lines = []
     for line in f:
+        line_text = str(line)
         i += 1
         # need to account for aliases 
         # and submodules
-        # need to disregard comments
+        # need to disregard comments - currently only disregards if package is not imported in that file
         # need to disregard if part of something eg 'cost' variable gets caught while looking for 'os' package
-        if 'import' in line:
+        if 'import' in line_text and package in line_text:
             imported = True
-        elif imported and package in line:
+        elif imported and package in line_text:
             affected_lines.append(i)
     return affected_lines
 
