@@ -12,24 +12,33 @@ def check_file_for_package(filename,package):
     for line in f:
         line_text = str(line)
         i += 1
+        # need to disregard comments - currently only disregards if package is not imported in that file
         # need to account for aliases 
         # and submodules
-        # need to disregard comments - currently only disregards if package is not imported in that file
         # need to disregard if part of something eg 'cost' variable gets caught while looking for 'os' package
+        # Actually Useful and harder to code Mode: grab variables made w package and identify lines using those
         if 'import' in line_text and package in line_text:
             imported = True
         elif imported and package in line_text:
             affected_lines.append(i)
     return affected_lines
 
+def search_directory_for_package(package='pyshorteners'):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
+    affected_files = []
 
-for root, dirs, files in os.walk(dir_path):
-    for file in files:
-        if file.endswith('.py'):
-            filepath = root + '/' + file
-            affected_lines = check_file_for_package(filepath,'pyshorteners')
-            if len(affected_lines) > 0:
-                print(f"pyshorteners found on lines {affected_lines} in file {filepath}")
+    for root, dirs, files in os.walk(dir_path):
+        for file in files:
+            if file.endswith('.py'):
+                filepath = root + '/' + file
+                affected_lines = check_file_for_package(filepath,package)
+                if len(affected_lines) > 0:
+                    affected_files.append(filepath)
 
+    return affected_files
+
+if __name__ == '__main__':
+    print()
+    print("PYSHORTENERS PACKAGE IS USED BY THE FOLLOWING FILES:")
+    for f in search_directory_for_package(): print(f"-> {f}")
