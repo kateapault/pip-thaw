@@ -3,7 +3,7 @@ import idna
 
 pyshorteners
 # another comment line
-# pyshorteners
+pyshorteners # pyshorteners is also BEFORE the comment so this line should show up
 
 idna
 k = 0

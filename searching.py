@@ -16,9 +16,12 @@ def check_file_for_package(filename,package):
         # need to account for aliases 
         # and submodules
         # need to disregard if part of something eg 'cost' variable gets caught while looking for 'os' package
-        # Actually Useful and harder to code Mode: grab variables made w package and identify lines using those
+        # Actually Useful and harder to code Mode: grab variables/etc made w package and identify lines using those
         if 'import' in line_text and package in line_text:
             imported = True
+        elif imported and '#' in line_text:
+            if package in line_text.split('#')[0]:
+                affected_lines.append(i)
         elif imported and package in line_text:
             affected_lines.append(i)
     return affected_lines
@@ -34,11 +37,14 @@ def search_directory_for_package(package='pyshorteners'):
                 filepath = root + '/' + file
                 affected_lines = check_file_for_package(filepath,package)
                 if len(affected_lines) > 0:
-                    affected_files.append(filepath)
+                    affected_files.append({'file':filepath,'lines':affected_lines})
 
     return affected_files
 
 if __name__ == '__main__':
     print()
     print("PYSHORTENERS PACKAGE IS USED BY THE FOLLOWING FILES:")
-    for f in search_directory_for_package(): print(f"-> {f}")
+    for f in search_directory_for_package():
+        print(f"FILE: {f['file']}")
+        print(f"LINES: {f['lines']}")
+    
