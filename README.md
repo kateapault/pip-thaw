@@ -23,3 +23,4 @@ Package update tool that:
 flags will go here as they're completed
 
 # Notes:
+At this point it may just generate log file?

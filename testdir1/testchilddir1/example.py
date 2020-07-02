@@ -1,9 +1,9 @@
-import pyshorteners
+from pyshorteners import Shortener
 import http
 
-g = pyshorteners 
+g = Shortener()
 
-l = 'examplessss' # this line should not show up even though it has 'pyshorteners' in it
+l = 'examplessss' 
 i = 0
 k = ''
 while i < len(l):

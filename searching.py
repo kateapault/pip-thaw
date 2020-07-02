@@ -1,5 +1,19 @@
 import os
 
+def check_package_name_isnt_subword(package,line):
+    '''
+    this assumes substring package has already been found inside string line
+    returns True if package is indeed in line, False if not
+    ex:
+    check_package_name_isnt_subword('os','pathname = os.path.dirname("file")')
+    >> True
+    check_package_name_isnt_subword('os', 'total_cost = item_price + tax')
+    >> False
+    '''
+    package_name_end_ind = line.find(package) + len(package)
+    
+    
+
 def check_file_for_package(filename,package):
     '''
     inputs: str:filename, str:package (package name)
@@ -12,13 +26,15 @@ def check_file_for_package(filename,package):
     for line in f:
         line_text = str(line)
         i += 1
-        # need to disregard comments - currently only disregards if package is not imported in that file
-        # need to account for aliases 
-        # and submodules
+        # need to account for multiple submodules
         # need to disregard if part of something eg 'cost' variable gets caught while looking for 'os' package
         # Actually Useful and harder to code Mode: grab variables/etc made w package and identify lines using those
         if 'import' in line_text and package in line_text:
             imported = True
+            if 'as' in line_text:
+                package = line_text.split('as')[1].strip()
+            elif 'from' in line_text:
+                package = line_text.split('import')[1].strip()
         elif imported and '#' in line_text:
             if package in line_text.split('#')[0]:
                 affected_lines.append(i)

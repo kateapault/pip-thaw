@@ -1,9 +1,9 @@
-import pyshorteners
+import pyshorteners as ps
 
 # comments
 
-variable_name = pyshorteners
-
+variable_name = ps
+print("alex waz here")
 l = 'examplessss'
 i = 0
 k = ''
