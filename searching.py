@@ -10,7 +10,15 @@ def check_package_name_isnt_subword(package,line):
     check_package_name_isnt_subword('os', 'total_cost = item_price + tax')
     >> False
     '''
-    package_name_end_ind = line.find(package) + len(package)
+    solo = True
+    package_name_start_ind = line.find(package)
+    package_name_end_ind = package_name_start_ind + len(package)
+    if package_name_end_ind != len(line) - 1:
+        if line[package_name_end + 1] not in '.()[]{} =#-+*/%':
+            solo = False
+    if line[package_name_start_ind - 1] not in '.()[]{} =/*+-%':
+        solo = False
+    return solo
     
     
 
