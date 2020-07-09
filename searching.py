@@ -22,9 +22,9 @@ def check_package_name_isnt_subword(package,line):
     
     
 
-def check_file_for_package(filename,package):
+def check_file_for_package(filename,packages):
     '''
-    inputs: str:filename, str:package (package name)
+    inputs: str:filename, list:packages (package names)
     outputs: list containing line #s (not counting 'import x') that the package is explicity in
     '''
     f = open(filename)
@@ -37,17 +37,20 @@ def check_file_for_package(filename,package):
         # need to account for multiple submodules
         # need to disregard if part of something eg 'cost' variable gets caught while looking for 'os' package
         # Actually Useful and harder to code Mode: grab variables/etc made w package and identify lines using those
-        if 'import' in line_text and package in line_text:
-            imported = True
-            if 'as' in line_text:
-                package = line_text.split('as')[1].strip()
-            elif 'from' in line_text:
-                package = line_text.split('import')[1].strip()
-        elif imported and '#' in line_text:
-            if package in line_text.split('#')[0]:
+        for package in packages:
+            if 'import' in line_text and package in line_text:
+                imported = True
+                if 'as' in line_text:
+                    package = line_text.split('as')[1].strip()
+                elif 'from' in line_text:
+                    package = line_text.split('import')[1].strip()
+            elif imported and f"= {package}" in line_text:
+                packages.append(line_text.split('=').strip())
+            elif imported and '#' in line_text:
+                if package in line_text.split('#')[0]:
+                    affected_lines.append(i)
+            elif imported and package in line_text:
                 affected_lines.append(i)
-        elif imported and package in line_text:
-            affected_lines.append(i)
     return affected_lines
 
 def search_directory_for_package(package='pyshorteners'):
