@@ -71,12 +71,12 @@ def search_directory_for_package(package='pyshorteners'):
 if __name__ == '__main__':
     # print()
     # print("PYSHORTENERS PACKAGE IS USED BY THE FOLLOWING FILES:")
-    now = dt.now().strftime('%m-%d-%y %H%M%S')
-    report = open(f"report-{now}.txt",'w')
-    report_body = "AFFECTED FILES AND LINES\n\n"
-    for f in search_directory_for_package():
-        report_body += (f['file'] + '\n')
-        report_body += ('\t' + f['lines'] + '\n')
-    report.write(report_body)
-    report.close()
-    
+    # now = dt.now().strftime('%m-%d-%y %H%M%S')
+    # report = open(f"report-{now}.txt",'w')
+    # report_body = "AFFECTED FILES AND LINES\n\n"
+    # for f in search_directory_for_package():
+    #     report_body += (f['file'] + '\n')
+    #     report_body += ('\t' + f['lines'] + '\n')
+    # report.write(report_body)
+    # report.close()
+    pass
