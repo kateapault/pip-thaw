@@ -19,6 +19,6 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: MacOS",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.0',
     keywords="thaw update freeze pip requirements library manage package development project",
 )
