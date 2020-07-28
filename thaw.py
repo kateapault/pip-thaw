@@ -1,29 +1,19 @@
 
 """
-pip-thaw updates versions in your requirements.txt file that are out of date.
+pip-thaw identifies packages in your requirements.txt file that are out of date.
+Run pip-thaw to generate a report detailing which libraries are out of date and where
+those libraries are used in your project.
 
-You can choose to apply all changes or select from major/minor/micro.
-
-Requires ``pip`` Version 9 or higher!
+Requires ``pip`` Version 9 or higher.
 
 Installation::
     pip install pip-thaw
 
 Usage::
-    pip-thaw -h
-    
-    --f --files             lists files that will have errors?
-    --u --update            takes arguments minor/major/micro/all, can take multiple
-    OR -----------> 
-    --a --all               apply all updates
-    --j --major             apply major updates
-    --n --minor             apply minor updates
-    --c --micro             apply micro updates
-    --mr --major-minor      apply major and minor updates
-    --mi --minor-micro      apply minor and micro updates
+    pip-thaw 
 """
-import argparse
 from datetime import datetime as dt
+import os
 import subprocess
 import sys
 
@@ -33,7 +23,7 @@ from pypi_search import get_latest_version
 # SETTINGS -----------------------------------
 # --------------------------------------------
 
-logfile = "thaw_log.txt"
+logfile = "thaw_report.txt"
 
 # --------------------------------------------
 # HELPERS ------------------------------------
@@ -63,7 +53,7 @@ def dictify_pip_list(pip_stdout):
     return pip_list_dict
 
 
-def version_change_scale(old_version_string, new_version_string):
+def version_update_scale(old_version_string, new_version_string):
     """"
     takes in version numbers old_version and new_version as strings, compares them, 
     and returns "major" "minor" or "micro" to indicate scale of update required to get to new.
@@ -84,6 +74,73 @@ def version_change_scale(old_version_string, new_version_string):
         return None
     else:
         return "micro"
+
+# def check_package_name_isnt_subword(package,line):
+#     '''
+#     this assumes substring package has already been found inside string line
+#     returns True if package is indeed in line, False if not
+#     ex:
+#     check_package_name_isnt_subword('os','pathname = os.path.dirname("file")')
+#     >> True
+#     check_package_name_isnt_subword('os', 'total_cost = item_price + tax')
+#     >> False
+#     '''
+#     solo = True
+#     package_name_start_ind = line.find(package)
+#     package_name_end_ind = package_name_start_ind + len(package)
+#     if package_name_end_ind != len(line) - 1:
+#         if line[package_name_end + 1] not in '.()[]{} =#-+*/%':
+#             solo = False
+#     if line[package_name_start_ind - 1] not in '.()[]{} =/*+-%':
+#         solo = False
+#     return solo
+
+# --------------------------------------------
+# SEARCHING ----------------------------------
+# --------------------------------------------
+
+def check_file_for_library(filename,library):
+    '''
+    inputs: str:filename, str:library name
+    outputs: list containing line #s (not counting 'import x') that the library is explicity in
+    '''
+    # need to account for multiple submodules
+    # need to disregard if part of something eg 'cost' variable gets caught while looking for 'os' package
+    # Actually Useful and harder to code Mode: grab variables/etc made w package and identify lines using those
+    f = open(filename)
+    i = 0
+    imported = False
+    affected_lines = []
+    for line in f:
+        line_text = str(line)
+        i += 1
+        if 'import' in line_text and library in line_text:
+            imported = True
+            if 'as' in line_text:
+                library = line_text.split('as')[1].strip()
+            elif 'from' in line_text:
+                library = line_text.split('import')[1].strip()
+        elif imported and '#' in line_text:
+            if library in line_text.split('#')[0]:
+                affected_lines.append(i)
+        elif imported and library in line_text:
+            affected_lines.append(i)
+    return affected_lines
+
+def search_directory_for_library(library='pyshorteners'):
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+
+    affected_files = []
+
+    for root, dirs, files in os.walk(dir_path):
+        for file in files:
+            if file.endswith('.py'):
+                filepath = root + '/' + file
+                affected_lines = check_file_for_library(filepath,library)
+                if len(affected_lines) > 0:
+                    affected_files.append({'file':filepath,'lines':affected_lines})
+
+    return affected_files
     
     
 # --------------------------------------------
@@ -91,7 +148,6 @@ def version_change_scale(old_version_string, new_version_string):
 # --------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="An update helper")
     
     try:
         requirements = open("requirements.txt")
@@ -113,6 +169,8 @@ def main():
         }
     }
     
+    affected_by_outdated_libraries = {}
+    
     log = open(logfile,"a+")
      
     report_time = f"pip-thaw {dt.now().strftime('%m-%d-%y %H:%M:%S')}\n"
@@ -123,12 +181,14 @@ def main():
         if "==" in line:
             library, current_version = line.strip().split("==")
             latest_version = get_latest_version(library)
-            scale = version_change_scale(current_version,latest_version)
+            scale = version_update_scale(current_version,latest_version)
             if scale:
                 scales[scale]["count"] += 1
-                report_body += f"\t*{library:<40} | {current_version} >> {latest_version}\n"
+                scales[scale]["libraries"].append(library)
+                affected_by_outdated_libraries[library] = search_directory_for_library(library)
+                report_body += f"\t*{library:<40} | {current_version} >> {latest_version} | {affected_by_outdated_libraries[library]}\n"
             else:
-                report_body += f"\t{library:<41} | {current_version}\n"
+                report_body += f"\t{library:<41} | {current_version}, no update needed\n"
         else:
             report_body += f'\t{line.strip():<41} | no version requirement\n'
 

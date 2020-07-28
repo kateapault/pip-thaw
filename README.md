@@ -9,18 +9,17 @@ Package update tool that:
 
 ✅ identifies lines in those files that use these outdated versions
 
-❌ (option) applies all updates to requirements.txt
+❌ identifies variables in those files that are made with outdated versions
 
-❌ (option) applies selective updates (major, minor, micro, major/minor, minor/micro) to requirements.txt
-
-❌ (option) creates reference file denoting which lines in which files would be affected by selected updates
-
+✅ creates report file detailing which lines in which files would be affected by selected updates
 
 # Install:
 ```$ pip install pip-thaw``` (...except this isn't a full package yet so please don't try to install it)
 
 # Use:
-flags will go here as they're completed
+```$ pip install pip-thaw``` >> generates report file thaw_report.txt
 
 # Notes:
-At this point it may just generate log file?
+The report file is pretty ugly right now and it doesn't distinguish between directly required libraries and dependencies. 
+
+Report file should note primary/secondary package, should break packages up into minor/major/micro categories, ?should include just list of packages that don't need updates?, should be much better formatted (possibly as checklist)
