@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
     
 setuptools.setup(
-    name="pip-thaw",
-    version="0.0.1",
+    name="thaw",
+    version="0.1",
     author="Kate Raskauskas",
     author_email="kateapault@gmail.com",
     description="Update CLI utility",
@@ -15,8 +15,10 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
+        "Topic :: Software Development",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
+        "Operating System :: MacOS",
     ],
     python_requires='>=3.6',
+    keywords="thaw update freeze pip requirements library manage package development project",
 )

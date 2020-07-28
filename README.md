@@ -14,10 +14,10 @@ Package update tool that:
 ✅ creates report file detailing which lines in which files would be affected by selected updates
 
 # Install:
-```$ pip install pip-thaw``` (...except this isn't a full package yet so please don't try to install it)
+```$ pip install thaw``` (...except this isn't a full package yet so please don't try to install it)
 
 # Use:
-```$ pip install pip-thaw``` >> generates report file thaw_report.txt
+```$ python thaw``` >> generates report file thaw_report.txt
 
 # Notes:
 The report file is pretty ugly right now and it doesn't distinguish between directly required libraries and dependencies. 
