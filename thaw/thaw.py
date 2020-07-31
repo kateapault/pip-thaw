@@ -16,7 +16,7 @@ from datetime import datetime as dt
 import os
 import subprocess
 import sys
-from urllib import requestfrom urllib import request
+from urllib import request
 
 
 # --------------------------------------------
@@ -177,11 +177,6 @@ def search_directory_for_library(library='pyshorteners'):
 
 def main():
     
-    try:
-        requirements = open("requirements.txt")
-    except FileNotFoundError:
-        print("No requirements file found - please run thaw in the top level of your project")
-    
     scales = {
         "major": {
             "count":0,
@@ -196,50 +191,52 @@ def main():
             "libraries":[],
         }
     }
-    
+        
     affected_by_outdated_libraries = {}
-    
-    log = open(logfile,"a+")
-     
     report_time = f"pip-thaw {dt.now().strftime('%m-%d-%y %H:%M:%S')}\n"
     report_body = ""
     
-    for line in requirements:
-
-        if "==" in line:
-            library, current_version = line.strip().split("==")
-            latest_version = get_latest_version(library)
-            scale = version_update_scale(current_version,latest_version)
-            if scale:
-                scales[scale]["count"] += 1
-                scales[scale]["libraries"].append(library)
-                affected_by_outdated_libraries[library] = search_directory_for_library(library)
-                report_body += f"\t*{library:<40} | {current_version} >> {latest_version} | {affected_by_outdated_libraries[library]}\n"
+    try:
+        log = open(logfile,"a+")
+        requirements = open("requirements.txt")
+        
+        for line in requirements:
+            if "==" in line:
+                library, current_version = line.strip().split("==")
+                latest_version = get_latest_version(library)
+                scale = version_update_scale(current_version,latest_version)
+                if scale:
+                    scales[scale]["count"] += 1
+                    scales[scale]["libraries"].append(library)
+                    affected_by_outdated_libraries[library] = search_directory_for_library(library)
+                    report_body += f"\t*{library:<40} | {current_version} >> {latest_version} | {affected_by_outdated_libraries[library]}\n"
+                else:
+                    report_body += f"\t{library:<41} | {current_version}, no update needed\n"
             else:
-                report_body += f"\t{library:<41} | {current_version}, no update needed\n"
-        else:
-            report_body += f'\t{line.strip():<41} | no version requirement\n'
+                report_body += f'\t{line.strip():<41} | no version requirement\n'
 
-    report_summary = ""
-    major = scales['major']['count']
-    minor = scales['minor']['count']
-    micro = scales['micro']['count']
-    print(f"{major + minor + micro} TOTAL updates")
-    report_summary += f"{major + minor + micro} total updates: "
-    print(f"{major} MAJOR updates")
-    report_summary += f"{major} MAJOR updates, "
-    print(f"{minor} MINOR updates")
-    report_summary += f"{minor} MINOR updates, "
-    print(f"{micro} MICRO updates")
-    report_summary += f"{micro} MICRO updates\n"
+        report_summary = ""
+        major = scales['major']['count']
+        minor = scales['minor']['count']
+        micro = scales['micro']['count']
+        print(f"{major + minor + micro} TOTAL updates")
+        report_summary += f"{major + minor + micro} total updates: "
+        print(f"{major} MAJOR updates")
+        report_summary += f"{major} MAJOR updates, "
+        print(f"{minor} MINOR updates")
+        report_summary += f"{minor} MINOR updates, "
+        print(f"{micro} MICRO updates")
+        report_summary += f"{micro} MICRO updates\n"
+        
+        log.write(report_time)
+        log.write(report_summary)
+        log.write(report_body)
+        log.write("\n")
+        
+        requirements.close()
+        log.close()
     
-    log.write(report_time)
-    log.write(report_summary)
-    log.write(report_body)
-    log.write("\n")
-    
-    requirements.close()
-    log.close()
-    
+    except FileNotFoundError:
+        print("No requirements file found - please run thaw in the top level of your project")    
 if __name__ == "__main__":
     main()
