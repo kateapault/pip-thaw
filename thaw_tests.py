@@ -3,64 +3,64 @@ from thaw import thaw
 
 class ThawTests(unittest.TestCase):
     
-    def thawExists(self):
-        pass
-    
-    def shouldThrowExceptionIfRequirementsFileAbsent(self):
+    def testThawExists(self):
         pass
     
     
-    
-    
-    def versionUpdateScaleReturnMajor(self):
-        pass
-    
-    def versionUpdateScaleReturnMinor(self):
-        pass
-    
-    def versionUpdateScaleReturnMicro(self):
-        pass
-    
-    def versionUpdateScaleReturnNone(self):
+    def testShouldThrowExceptionIfRequirementsFileAbsent(self):
         pass
     
     
     
-    def checkPackageNameIsntSubwordReturnsFalseForSubwordInMiddleOfWord(self):
+    def testVersionUpdateScaleReturnsMajor(self):
+        self.assertEqual(thaw.version_update_scale('1.0','2.1'),"major")
+    
+    def testVersionUpdateScaleReturnsMinor(self):
+        self.assertEqual(thaw.version_update_scale('1.0.0','1.1.6'),"minor")
+    
+    def testVersionUpdateScaleReturnsMicro(self):
+        self.assertEqual(thaw.version_update_scale('1.0.0','1.0.1'),"micro")
+    
+    def testVersionUpdateScaleReturnsNone(self):
+        self.assertEqual(thaw.version_update_scale('1.0','1.0'),None)
+    
+    
+    
+    def testPackageInstanceNotSubwordReturnsFalseForSubwordInMiddleOfWord(self):
+        self.assertEqual(thaw.package_instance_not_subword('os','the cost is prohibitive'),False)
+    
+    def testPackageInstanceNotSubwordReturnsFalseForSubwordAtBeginningOfWord(self):
+        self.assertEqual(thaw.package_instance_not_subword('os','the word ossify means to turn into bone'),False)
+    
+    def testPackageInstanceNotSubwordReturnsFalseForSubwordAtEndOfWord(self):
+        self.assertEqual(thaw.package_instance_not_subword('os','the kangaroos are wild'),False)
+    
+    def testPackageInstanceNotSubwordReturnsTrueForNoSubword(self):
+        self.assertEqual(thaw.package_instance_not_subword('os','library os is in this line'),True)
+    
+    def testPackageInstanceNotSubwordRaisesExceptionIfPackageNameNotInString(self):
         pass
     
-    def checkPackageNameIsntSubwordReturnsFalseForSubwordAtBeginningOfWord(self):
+    
+    def testCheckFileForLibraryNoLibraryPresent(self):
         pass
     
-    def checkPackageNameIsntSubwordReturnsFalseForSubwordAtEndOfWord(self):
+    def testCheckFileForLibraryImportLibrary(self):
         pass
     
-    def checkPackageNameIsntSubwordReturnsTrueForNoSubword(self):
+    def testCheckFileForLibraryFromLibraryImportOneModule(self):
         pass
     
-    def checkPackageNameIsntSubwordRaisesExceptionIfPackageNameNotThere(self):
-        pass
-    
-    
-    def checkFileForLibraryNoLibraryPresent(self):
-        pass
-    
-    def checkFileForLibraryImportLibrary(self):
-        pass
-    
-    def checkFileForLibraryFromLibraryImportOneModule(self):
-        pass
-    
-    def checkFileForLibraryFromLibraryImportTwoModules(self):
+    def testCheckFileForLibraryFromLibraryImportTwoModules(self):
         pass
 
-    def checkFileForLibraryImportLibraryAsAlias(self):
+    def testCheckFileForLibraryImportLibraryAsAlias(self):
         pass
     
-    def checkFileForLibraryFromLibraryImportOneModuleAsAlias(self):
+    def testCheckFileForLibraryFromLibraryImportOneModuleAsAlias(self):
         pass
     
-    def checkFileForLibraryAndIdentifyVariables(self):
+    def testCheckFileForLibraryAndIdentifyVariables(self):
         pass
 
 if __name__ == '__main__':

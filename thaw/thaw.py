@@ -75,26 +75,27 @@ def version_update_scale(old_version_string, new_version_string):
     else:
         return "micro"
 
-# def check_package_name_isnt_subword(package,line):
-#     '''
-#     this assumes substring package has already been found inside string line
-#     returns True if package is indeed in line, False if not
-#     ex:
-#     check_package_name_isnt_subword('os','pathname = os.path.dirname("file")')
-#     >> True
-#     check_package_name_isnt_subword('os', 'total_cost = item_price + tax')
-#     >> False
-#     '''
-#     solo = True
-#     package_name_start_ind = line.find(package)
-#     package_name_end_ind = package_name_start_ind + len(package)
-#     if package_name_end_ind != len(line) - 1:
-#         if line[package_name_end + 1] not in '.()[]{} =#-+*/%':
-#             solo = False
-#     if line[package_name_start_ind - 1] not in '.()[]{} =/*+-%':
-#         solo = False
-#     return solo
+def package_instance_not_subword(package,line):
+    '''
+    this assumes substring package has already been found inside string line
+    returns True if package is indeed in line, False if not
+    ex:
+    check_package_instance_isnt_subword('os','pathname = os.path.dirname("file")')
+    >> True
+    check_package_name_isnt_subword('os', 'total_cost = item_price + tax')
+    >> False
+    '''
+    actual_package_instance = True
+    
+    package_name_start_ind = line.find(package)
+    if package_name_start_ind > 0:
+        character_before = line[package_name_start_ind - 1]
+    else: 
+        character_before = None
+    if character_before and character_before not in ' .:()[]{}=':
+        actual_package_instance = False
 
+    return actual_package_instance
 
 # --------------------------------------------
 # PYPI SEARCH --------------------------------
