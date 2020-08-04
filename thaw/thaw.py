@@ -1,4 +1,3 @@
-
 """
 pip-thaw identifies packages in your requirements.txt file that are out of date.
 Run pip-thaw to generate a report detailing which libraries are out of date and where
@@ -7,10 +6,10 @@ those libraries are used in your project.
 Requires ``pip`` Version 9 or higher.
 
 Installation::
-    pip install pip-thaw
+    pip install thaw
 
 Usage::
-    pip-thaw 
+    $ thaw 
 """
 from datetime import datetime as dt
 import os
@@ -24,6 +23,11 @@ from urllib import request
 # --------------------------------------------
 
 logfile = "thaw_report.txt"
+
+class WrongAssumptionError(Exception):
+    def __init__(self,expression,message):
+        self.expression = expression
+        self.message = message
 
 # --------------------------------------------
 # HELPERS ------------------------------------
@@ -77,25 +81,36 @@ def version_update_scale(old_version_string, new_version_string):
 
 def package_instance_not_subword(package,line):
     '''
-    this assumes substring package has already been found inside string line
-    returns True if package is indeed in line, False if not
+    returns True if package is indeed in line, False if it's part of another word, raises error if package name is not found in string
+    
     ex:
     check_package_instance_isnt_subword('os','pathname = os.path.dirname("file")')
     >> True
     check_package_name_isnt_subword('os', 'total_cost = item_price + tax')
     >> False
-    '''
-    actual_package_instance = True
-    
+    '''   
     package_name_start_ind = line.find(package)
-    if package_name_start_ind > 0:
+
+    if package_name_start_ind == -1:
+        raise WrongAssumptionError("package_instance_not_subword","Package name not found in line")
+    elif package_name_start_ind > 0:
         character_before = line[package_name_start_ind - 1]
     else: 
         character_before = None
+    
     if character_before and character_before not in ' .:()[]{}=':
-        actual_package_instance = False
+        return False 
+    
+    package_name_end_ind = package_name_start_ind + len(package) - 1
+    if package_name_end_ind < len(line) - 1:
+        character_after = line[package_name_end_ind + 1]
+    else:
+        character_after = None
 
-    return actual_package_instance
+    if character_after and character_after not in ' .:()[]{}=':
+        return False 
+
+    return True
 
 # --------------------------------------------
 # PYPI SEARCH --------------------------------

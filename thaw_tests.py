@@ -10,6 +10,10 @@ class ThawTests(unittest.TestCase):
     def testShouldThrowExceptionIfRequirementsFileAbsent(self):
         pass
     
+    # HELPER METHOD TESTS ----------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    def testDictifyPipList(self):
+        pass
     
     
     def testVersionUpdateScaleReturnsMajor(self):
@@ -31,15 +35,35 @@ class ThawTests(unittest.TestCase):
     
     def testPackageInstanceNotSubwordReturnsFalseForSubwordAtBeginningOfWord(self):
         self.assertEqual(thaw.package_instance_not_subword('os','the word ossify means to turn into bone'),False)
+        
+    def testPackageInstanceNotSubwordReturnsFalseForSubwordAtBeginningOfLine(self):
+        self.assertEqual(thaw.package_instance_not_subword('os','ostentatious means very showy'),False)
     
     def testPackageInstanceNotSubwordReturnsFalseForSubwordAtEndOfWord(self):
-        self.assertEqual(thaw.package_instance_not_subword('os','the kangaroos are wild'),False)
+        self.assertEqual(thaw.package_instance_not_subword('os','kangaroos are wild animals'),False)
+        
+    def testPackageInstanceNotSubwordReturnsFalseForSubwordAtEndOfLine(self):
+        self.assertEqual(thaw.package_instance_not_subword('os','we tave two tenors and three sopranos'),False)
     
     def testPackageInstanceNotSubwordReturnsTrueForNoSubword(self):
-        self.assertEqual(thaw.package_instance_not_subword('os','library os is in this line'),True)
+        self.assertEqual(thaw.package_instance_not_subword('os','pathname = os.path.dirname("file")'),True)
     
     def testPackageInstanceNotSubwordRaisesExceptionIfPackageNameNotInString(self):
+        self.assertRaises(thaw.WrongAssumptionError,thaw.package_instance_not_subword,"os","The package should not be found in this line")
+
+    
+    # PYPI SEARCH METHOD TESTS -----------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+    
+    def testHackyParseForPackageTitle(self):
         pass
+    
+    def testGetLatestVersion(self):
+        pass
+    
+    
+    # PROJECT SEARCH METHOD TESTS --------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     
     
     def testCheckFileForLibraryNoLibraryPresent(self):
@@ -62,6 +86,9 @@ class ThawTests(unittest.TestCase):
     
     def testCheckFileForLibraryAndIdentifyVariables(self):
         pass
+    
+    # MAIN METHOD TESTS ------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     unittest.main()
