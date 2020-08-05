@@ -169,6 +169,9 @@ def check_file_for_library(filename,library):
                 affected_lines.append(i)
         elif imported and library in line_text:
             affected_lines.append(i)
+    
+    f.close()
+    
     return affected_lines
 
 def search_directory_for_library(library='pyshorteners'):
@@ -213,8 +216,8 @@ def main():
     report_body = ""
     
     try:
-        log = open(logfile,"a+")
         requirements = open("requirements.txt")
+        log = open(logfile,"a+")
         
         for line in requirements:
             if "==" in line:

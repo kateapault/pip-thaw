@@ -1,10 +1,50 @@
+import shutil, tempfile
+import os
+import pathlib
 import unittest
+
 from thaw import thaw
 
 class ThawTests(unittest.TestCase):
+    # SETUP METHODS ----------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
     
-    def testThawExists(self):
-        pass
+    def setUpTempDirectory(self):
+        self.test_dir = tempfile.mkdtemp('example')
+    
+    def createTempRequirementsDotTxt(self):
+        f = open(os.path.join(self.test_dir, 'requirements.txt'), 'w')
+        # library with major update needed ()
+        # f.write('\n')
+        # library with minor update needed (2.8 -> 2.10)
+        f.write('idna==2.8\n')
+        # library with micro update needed (1.19.0 -> 1.19.1)
+        # f.write('\n')    
+        # library with no update needed
+        # f.write('\n')
+        # library with no version number included
+        # f.write('')
+        f.close()
+    
+    def tearDownTempDirectory(self):
+        shutil.rmtree(self.test_dir)
+        
+    
+    def testTempDirectoryFormation(self):
+        self.setUpTempDirectory()
+        self.createTempRequirementsDotTxt()
+        print('test directory should be set up with req file')
+        print(self.test_dir)
+        temp_path = self.test_dir
+        print(f"Temp Path: {temp_path}")
+        orig_path = os.getcwd()
+        print(f"This path: {orig_path}")
+        os.chdir(temp_path)
+        print(f"now path: {os.getcwd()}")
+        print(os.listdir(os.getcwd()))
+        thaw.main()
+        os.chdir(orig_path)
+        self.tearDownTempDirectory()
     
     
     def testShouldThrowExceptionIfRequirementsFileAbsent(self):
