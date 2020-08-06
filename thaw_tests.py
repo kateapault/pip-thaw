@@ -12,6 +12,11 @@ class ThawTests(unittest.TestCase):
     
     def setUpTempDirectory(self):
         self.test_dir = tempfile.mkdtemp('example')
+        
+    def createTempDotPyFile(self,text):
+        f = open(os.path.join(self.test_dir, 'temp.py'), 'w')
+        f.write(text)
+        f.close()
     
     def createTempRequirementsDotTxt(self):
         f = open(os.path.join(self.test_dir, 'requirements.txt'), 'w')
@@ -125,7 +130,10 @@ class ThawTests(unittest.TestCase):
     # ------------------------------------------------------------------------------------------------------------------
     
     def testCheckFileForLibraryNoLibraryPresent(self):
-        pass
+        self.setUpTempDirectory()
+        self.createTempDotPyFile('here is some\nmultiline text')
+        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'idna'),[])
+        self.tearDownTempDirectory()
     
     def testCheckFileForLibraryWhereLibraryNameIsInComment(self):
         pass
