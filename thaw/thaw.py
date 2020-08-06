@@ -33,30 +33,6 @@ class WrongAssumptionError(Exception):
 # HELPERS ------------------------------------
 # --------------------------------------------
 
-def dictify_pip_list(pip_stdout):
-    pip_string = pip_stdout.decode('utf-8')
-    pip_arr = pip_string.split()
-
-    pip_list_dict = {}
-    i = 8
-    while i < len(pip_arr):
-        
-        if i % 4 == 0:
-            library_name = pip_arr[i]
-        elif i % 4 == 1:
-            library_info = {"current":pip_arr[i]}
-        elif i % 4 == 2:
-            library_info["latest"] = pip_arr[i]
-        else:
-            update_scale = version_change_scale(library_info["current"], library_info["latest"])
-            print(f"{library_name}: version {library_info['current']} to version {library_info['latest']} => {update_scale} update")
-            library_info["scale"] = update_scale
-            pip_list_dict[library_name] = library_info
-        i += 1
-        
-    return pip_list_dict
-
-
 def version_update_scale(old_version_string, new_version_string):
     """"
     takes in version numbers old_version and new_version as strings, compares them, 
@@ -78,6 +54,8 @@ def version_update_scale(old_version_string, new_version_string):
         return None
     else:
         return "micro"
+
+# --------------------
 
 def package_instance_not_subword(package,line):
     '''
@@ -127,6 +105,7 @@ def hacky_parse_for_package_title(html_string):
     
     return html_string[text_start:text_end].strip()
 
+# ----------------------
 
 def get_latest_version(package_name):
     url = f"https://pypi.org/project/{package_name}/"
@@ -212,7 +191,7 @@ def main():
     }
         
     affected_by_outdated_libraries = {}
-    report_time = f"pip-thaw {dt.now().strftime('%m-%d-%y %H:%M:%S')}\n"
+    report_time = f"thaw {dt.now().strftime('%m-%d-%y %H:%M:%S')}\n"
     report_body = ""
     
     try:

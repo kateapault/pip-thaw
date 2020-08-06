@@ -46,14 +46,12 @@ class ThawTests(unittest.TestCase):
         os.chdir(orig_path)
         self.tearDownTempDirectory()
     
-    
-    def testShouldThrowExceptionIfRequirementsFileAbsent(self):
-        pass
+
     
     # HELPER METHOD TESTS ----------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     def testDictifyPipList(self):
-        pass
+        thaw.dictify_pip_list()
     
     
     def testVersionUpdateScaleReturnsMajor(self):
@@ -105,8 +103,10 @@ class ThawTests(unittest.TestCase):
     # PROJECT SEARCH METHOD TESTS --------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     
-    
     def testCheckFileForLibraryNoLibraryPresent(self):
+        pass
+    
+    def testCheckFileForLibraryWhereLibraryNameIsInComment(self):
         pass
     
     def testCheckFileForLibraryImportLibrary(self):
@@ -130,5 +130,23 @@ class ThawTests(unittest.TestCase):
     # MAIN METHOD TESTS ------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
+    def testShouldThrowExceptionIfRequirementsFileAbsent(self):
+        pass
+    
+    def testThawShouldShowOneMajorUpdate(self):
+        pass
+    
+    def testThawShouldShowOneMinorUpdate(self):
+        pass
+    
+    def testThawShouldShowOneMicroUpdate(self):
+        pass
+    
+    def testThawShouldShowNoUpdates(self):
+        pass
+    
+    def testThawShouldShowOneOfEachUpdateLevel(self):
+        pass
+    
 if __name__ == '__main__':
     unittest.main()
