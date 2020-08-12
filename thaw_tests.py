@@ -13,23 +13,37 @@ class ThawTests(unittest.TestCase):
     def setUpTempDirectory(self):
         self.test_dir = tempfile.mkdtemp('example')
         
-    def createTempDotPyFile(self,text):
-        f = open(os.path.join(self.test_dir, 'temp.py'), 'w')
+    def createTempDotPyFile(self,text,name='temp'):
+        f = open(os.path.join(self.test_dir, f"{name}.py"), 'w')
         f.write(text)
         f.close()
     
-    def createTempRequirementsDotTxt(self):
+    def createTempRequirementsDotTxt(self,label):
         f = open(os.path.join(self.test_dir, 'requirements.txt'), 'w')
-        # library with major update needed ()
-        # f.write('\n')
-        # library with minor update needed (2.8 -> 2.10)
-        f.write('idna==2.8\n')
-        # library with micro update needed (1.19.0 -> 1.19.1)
-        # f.write('\n')    
-        # library with no update needed
-        # f.write('\n')
-        # library with no version number included
-        # f.write('')
+        if label == 'major': # library with major update needed (0.25.3 -> 1.1.0)
+            f.write('pandas==0.25.3\n')
+            text = 'import pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
+            self.createTempDotPyFile(text)
+        elif label == 'minor': # library with minor update needed (1.0.5 -> 1.1.0)
+            f.write('pandas==1.0.5\n')
+            text = 'import pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
+            self.createTempDotPyFile(text)
+        elif label == 'micro': # library with micro update needed (1.19.0 -> 1.19.1)
+            f.write('numpy==1.19.0\n')
+            text = 'import numpy as np\n\na = np.arange(15).reshape(3, 5)\nprint(a)'
+            self.createTempDotPyFile(text)    
+        elif label == 'all': # libraries with major, minor, and micro updates needed
+            f.write('idna==2.9\nnumpy==1.19.0\npandas==0.25.3\n')
+            text_minor = 'import idna\n\nencoded = idna.encode("ドメイン.テスト")\nprint(idna.decode(encoded))'
+            self.createTempDotPyFile(text_minor,'minor')
+            text_micro = 'import pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
+            self.createTempDotPyFile(text_micro,'micro')
+            text_major = 'import numpy as np\n\na = np.arange(15).reshape(3, 5)\nprint(a)'
+            self.createTempDotPyFile(text_major,'major')
+        elif label == 'none': # all libraries up to date
+            f.write('pandas==1.1.0\n')
+            text = 'import pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
+            self.createTempDotPyFile(text)
         f.close()
     
     def tearDownTempDirectory(self):
@@ -192,11 +206,14 @@ class ThawTests(unittest.TestCase):
     # MAIN METHOD TESTS ------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
 
-    # def testShouldThrowExceptionIfRequirementsFileAbsent(self):
+    # def testShouldNotCreateReportFileIfRequirementsFileAbsent(self):
     #     pass
     
     # def testThawShouldShowOneMajorUpdate(self):
-    #     pass
+    #     self.setUpTempDirectory()
+    #     self.createTempRequirementsDotTxt('major')
+    #     self.assertEqual()
+    #     self.tearDownTempDirectory()
     
     # def testThawShouldShowOneMinorUpdate(self):
     #     pass

@@ -191,7 +191,7 @@ def main():
     }
         
     affected_by_outdated_libraries = {}
-    report_time = f"thaw {dt.now().strftime('%m-%d-%y %H:%M:%S')}\n"
+    report_time = f"thaw report run {dt.now().strftime('%m-%d-%y %H:%M:%S')}\n"
     report_body = ""
     
     try:
@@ -225,7 +225,17 @@ def main():
         report_summary += f"{minor} MINOR updates, "
         print(f"{micro} MICRO updates")
         report_summary += f"{micro} MICRO updates\n"
-        
+        report_summary += '\n\nMajor updates:'
+        for lib in scales['major']['libraries']:
+            report_summary += f"\n[ ]{lib} - {affected_by_outdated_libraries[lib]}"
+        report_summary += '\n\nMinor updates:'
+        for lib in scales['minor']['libraries']:
+            report_summary += f"\n[ ]{lib} - {affected_by_outdated_libraries[lib]}"
+        report_summary += '\n\nMicro updates:'
+        for lib in scales['micro']['libraries']:
+            report_summary += f"\n[ ]{lib} - {affected_by_outdated_libraries[lib]}"
+            
+            
         log.write(report_time)
         log.write(report_summary)
         log.write(report_body)
