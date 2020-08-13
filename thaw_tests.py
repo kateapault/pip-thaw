@@ -182,7 +182,7 @@ class ThawTests(unittest.TestCase):
         self.tearDownTempDirectory()
 
     def testCheckFileForLibraryImportLibraryAsAlias(self):
-        text = 'import datetime as dt #1\n#2\nelapsed = td.timedelta(2) #3\nelapsed2 = td.timedelta(3) #4'
+        text = 'import datetime as dt #1\n#2\nelapsed = dt.timedelta(2) #3\nelapsed2 = dt.timedelta(3) #4'
         self.setUpTempDirectory()
         self.createTempDotPyFile(text)
         self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime'),[3,4])

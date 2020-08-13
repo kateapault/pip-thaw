@@ -133,21 +133,34 @@ def check_file_for_library(filename,library):
     f = open(filename)
     i = 0
     imported = False
+    words_to_check = [library]
     affected_lines = []
     for line in f:
         line_text = str(line)
         i += 1
         if 'import' in line_text and library in line_text:
             imported = True
-            if 'as' in line_text:
-                library = line_text.split('as')[1].strip()
-            elif 'from' in line_text:
-                library = line_text.split('import')[1].strip()
-        elif imported and '#' in line_text:
-            if library in line_text.split('#')[0]:
-                affected_lines.append(i)
-        elif imported and library in line_text:
-            affected_lines.append(i)
+            if '#' in line_text:
+                line_text = line_text.split('#')[0].strip()
+                if 'as' in line_text:
+                    words_to_check = [line_text.split('as')[1].strip()]
+                elif 'from' in line_text:
+                    modules = line_text.split('import')[1].strip()
+                    if ',' in modules:
+                        for mod in modules.split(','):
+                            words_to_check.append(mod.strip())
+                    else:
+                        words_to_check.append(modules)
+            print(f'words to check: {words_to_check}')
+        elif imported:
+            for keyword in words_to_check:
+                if '#' in line_text:
+                    if keyword in line_text.split('#')[0]:
+                        if i not in affected_lines:
+                            affected_lines.append(i)
+                elif keyword in line_text:
+                   if i not in affected_lines:
+                        affected_lines.append(i)
     
     f.close()
     
