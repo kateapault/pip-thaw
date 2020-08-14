@@ -99,7 +99,7 @@ def check_line_for_new_variable(package_name,line_string):
     elif '=' not in line_string:
         return []
     else:
-        return [line_string.split('=').strip()]
+        return [line_string.split('=')[0].strip()]
     
 # --------------------------------------------
 # PYPI SEARCH --------------------------------
@@ -170,9 +170,15 @@ def check_file_for_library(filename,library):
                     if keyword in line_text.split('#')[0]:
                         if package_instance_not_subword(keyword, line_text.split('#')[0]) and i not in affected_lines:
                             affected_lines.append(i)
+                            new_var = check_line_for_new_variable(keyword,line_text)
+                            if len(new_var) > 0:
+                                words_to_check += new_var
                 elif keyword in line_text:
                    if package_instance_not_subword(keyword, line_text) and i not in affected_lines:
                         affected_lines.append(i)
+                        new_var = check_line_for_new_variable(keyword,line_text)
+                        if len(new_var) > 0:
+                            words_to_check += new_var
     
     f.close()
     
