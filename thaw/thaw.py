@@ -11,6 +11,7 @@ Installation::
 Usage::
     $ thaw 
 """
+import argparse
 from datetime import datetime as dt
 import os
 import subprocess
@@ -94,6 +95,10 @@ def package_instance_not_subword(package,line):
 # --------------------
 
 def check_line_for_new_variable(package_name,line_string):
+    '''
+    Returns empty list if there is no variable assignment in the line string, 
+    returns list with the variable name(s) if there is variable assignment.
+    '''
     if package_name not in line_string:
         raise WrongAssumptionError('check_line_for_new_variable',"Keyword or package name not found in line")
     elif '=' not in line_string:
@@ -170,15 +175,11 @@ def check_file_for_library(filename,library):
                     if keyword in line_text.split('#')[0]:
                         if package_instance_not_subword(keyword, line_text.split('#')[0]) and i not in affected_lines:
                             affected_lines.append(i)
-                            new_var = check_line_for_new_variable(keyword,line_text)
-                            if len(new_var) > 0:
-                                words_to_check += new_var
+                            words_to_check += check_line_for_new_variable(keyword,line_text)
                 elif keyword in line_text:
                    if package_instance_not_subword(keyword, line_text) and i not in affected_lines:
                         affected_lines.append(i)
-                        new_var = check_line_for_new_variable(keyword,line_text)
-                        if len(new_var) > 0:
-                            words_to_check += new_var
+                        words_to_check += check_line_for_new_variable(keyword,line_text)
     
     f.close()
     

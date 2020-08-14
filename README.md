@@ -17,7 +17,7 @@ Package update tool that:
 ```$ pip install thaw```
 
 # Use:
-```$ thaw``` to generate a report file (thaw_report.txt)
+```$ python3 thaw.py``` to generate a report file (thaw_report.txt)
 
 # Notes:
 The report file is pretty ugly right now and it doesn't distinguish between directly required libraries and dependencies. 

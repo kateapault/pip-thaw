@@ -212,31 +212,7 @@ class ThawTests(unittest.TestCase):
         self.createTempDotPyFile(text)
         self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime'),[3,5])
         self.tearDownTempDirectory()
-    
-    
-    # MAIN METHOD TESTS ------------------------------------------------------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
 
-    # def testShouldNotCreateReportFileIfRequirementsFileAbsent(self):
-    #     pass
-    
-    # def testThawShouldShowOneMajorUpdate(self):
-    #     self.setUpTempDirectory()
-    #     self.createTempRequirementsDotTxt('major')
-    #     self.assertEqual()
-    #     self.tearDownTempDirectory()
-    
-    # def testThawShouldShowOneMinorUpdate(self):
-    #     pass
-    
-    # def testThawShouldShowOneMicroUpdate(self):
-    #     pass
-    
-    # def testThawShouldShowNoUpdates(self):
-    #     pass
-    
-    # def testThawShouldShowOneOfEachUpdateLevel(self):
-    #     pass
     
 if __name__ == '__main__':
     unittest.main()
