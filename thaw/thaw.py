@@ -96,7 +96,11 @@ def package_instance_not_subword(package,line):
 def check_line_for_new_variable(package_name,line_string):
     if package_name not in line_string:
         raise WrongAssumptionError('check_line_for_new_variable',"Keyword or package name not found in line")
-
+    elif '=' not in line_string:
+        return []
+    else:
+        return [line_string.split('=').strip()]
+    
 # --------------------------------------------
 # PYPI SEARCH --------------------------------
 # --------------------------------------------
