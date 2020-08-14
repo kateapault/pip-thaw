@@ -90,6 +90,13 @@ def package_instance_not_subword(package,line):
 
     return True
 
+
+# --------------------
+
+def check_line_for_new_variable(package_name,line_string):
+    if package_name not in line_string:
+        raise WrongAssumptionError('check_line_for_new_variable',"Keyword or package name not found in line")
+
 # --------------------------------------------
 # PYPI SEARCH --------------------------------
 # --------------------------------------------
@@ -139,27 +146,28 @@ def check_file_for_library(filename,library):
         line_text = str(line)
         i += 1
         if 'import' in line_text and library in line_text:
-            imported = True
-            if '#' in line_text:
-                line_text = line_text.split('#')[0].strip()
-                if 'as' in line_text:
-                    words_to_check = [line_text.split('as')[1].strip()]
-                elif 'from' in line_text:
-                    modules = line_text.split('import')[1].strip()
-                    if ',' in modules:
-                        for mod in modules.split(','):
-                            words_to_check.append(mod.strip())
-                    else:
-                        words_to_check.append(modules)
-            print(f'words to check: {words_to_check}')
+            if package_instance_not_subword(library, line_text):
+                imported = True
+                if '#' in line_text:
+                    line_text = line_text.split('#')[0].strip()
+                    if 'as' in line_text:
+                        words_to_check = [line_text.split('as')[1].strip()]
+                    elif 'from' in line_text:
+                        modules = line_text.split('import')[1].strip()
+                        if ',' in modules:
+                            for mod in modules.split(','):
+                                words_to_check.append(mod.strip())
+                        else:
+                            words_to_check.append(modules)
+                print(f'words to check: {words_to_check}')
         elif imported:
             for keyword in words_to_check:
                 if '#' in line_text:
                     if keyword in line_text.split('#')[0]:
-                        if i not in affected_lines:
+                        if package_instance_not_subword(keyword, line_text.split('#')[0]) and i not in affected_lines:
                             affected_lines.append(i)
                 elif keyword in line_text:
-                   if i not in affected_lines:
+                   if package_instance_not_subword(keyword, line_text) and i not in affected_lines:
                         affected_lines.append(i)
     
     f.close()

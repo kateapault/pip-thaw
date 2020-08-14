@@ -106,6 +106,17 @@ class ThawTests(unittest.TestCase):
     def testPackageInstanceNotSubwordRaisesExceptionIfPackageNameNotInString(self):
         self.assertRaises(thaw.WrongAssumptionError,thaw.package_instance_not_subword,"os","The package should not be found in this line")
 
+    # ------------------------------  
+    
+    def testCheckLineForNewVariableWithNoVariableButLibraryPresent(self):
+        self.assertEqual(thaw.check_line_for_new_variable('dt', 'dt.date.today()'),[])
+        
+    def testCheckLineForNewVariableShouldThrowErrorIfPackageNameNotInString(self):
+        self.assertRaises(thaw.WrongAssumptionError,thaw.check_line_for_new_variable,'dt','total = price + tax')
+        
+    def testCheckLineForNewVariableWithVariable(self):
+        self.assertEqual(thaw.check_line_for_new_variable('dt','today = dt.date.today()'),['today'])
+
     
     # PYPI SEARCH METHOD TESTS -----------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
