@@ -9,7 +9,7 @@ Package update tool that:
 
 ✅  identifies lines in those files that use these outdated versions
 
-❌  identifies variables in those files that are made with outdated versions
+✅  identifies variables in those files that are made with outdated versions
 
 ✅  creates report file detailing which lines in which files would be affected by selected updates
 
@@ -22,4 +22,4 @@ Package update tool that:
 # Notes:
 The report file is pretty ugly right now and it doesn't distinguish between directly required libraries and dependencies. 
 
-Report file should note primary/secondary package, should break packages up into minor/major/micro categories, ?should include just list of packages that don't need updates?, should be much better formatted (possibly as checklist)
+Report file should note primary/secondary package, ~~should break packages up into minor/major/micro categories,~~ ?should include simple list of packages that don't need updates?, should be much better formatted (possibly as checklist)
