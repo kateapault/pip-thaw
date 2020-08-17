@@ -207,7 +207,6 @@ def search_directory_for_library(library):
 # --------------------------------------------
 
 def main():
-    assert sys.version_info >= (3)
 
     scales = {
         "major": {
