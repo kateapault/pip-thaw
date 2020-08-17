@@ -206,7 +206,7 @@ def search_directory_for_library(library):
 # MAIN ---------------------------------------
 # --------------------------------------------
 
-def main():
+def __main__():
 
     scales = {
         "major": {
@@ -292,4 +292,4 @@ def main():
         print("No requirements file found - please run thaw in the top level of your project")    
 
 if __name__ == '__main__':
-    main()
+    __main__()
