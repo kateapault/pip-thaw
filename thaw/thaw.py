@@ -1,15 +1,13 @@
 """
-pip-thaw identifies libraries in your requirements.txt file that are out of date.
-Run pip-thaw to generate a report detailing which libraries are out of date and where
+thaw identifies libraries in your requirements.txt file that are out of date.
+Run thaw to generate a report detailing which libraries are out of date and where
 those libraries are used in your project.
-
-Requires ``pip`` Version 9 or higher.
 
 Installation::
     pip install thaw
 
 Usage::
-    $ thaw 
+    $ python thaw .py
 """
 import argparse
 from datetime import datetime as dt
