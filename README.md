@@ -1,25 +1,37 @@
-# thaw
-Package update tool that:
+# THAW
+Thaw is a tool that identifies outdated libraries in your requirements.txt file and generates a report file showing you exactly where updates would affect your project.
 
-✅  uses only built-in Python libraries - no dependencies to download
-
-✅  checks requirements.txt for outdated versions
-
-✅  identifies files in the project that use these outdated versions
-
-✅  identifies lines in those files that use these outdated versions
-
-✅  identifies variables in those files that are made with outdated versions
-
-✅  creates report file detailing which lines in which files would be affected by selected updates
 
 # Install:
-```$ pip install thaw```
+```
+$ pip install thaw
+```
 
 # Use:
-```$ python3 thaw.py``` to generate a report file (thaw_report.txt)
+```
+$ python3 thaw.py
+``` 
+This generates a report file, thaw_report.txt, at the same level that thaw was run.
+
+# Info
+
+✅  &nbsp; uses only built-in Python libraries - no dependencies to download
+
+✅  &nbsp; checks requirements.txt for outdated versions
+
+✅  &nbsp; identifies files in the project that use these outdated versions
+
+✅  &nbsp; identifies lines in those files that use these outdated versions
+
+✅  &nbsp; identifies variables in those files that are made with outdated versions
+
+✅  &nbsp; creates report file detailing which lines in which files would be affected by selected updates
 
 # Notes:
-The report file is pretty ugly right now and it doesn't distinguish between directly required libraries and dependencies. 
 
-Report file should note primary/secondary package, ~~should break packages up into minor/major/micro categories,~~ ?should include simple list of packages that don't need updates?, should be much better formatted (possibly as checklist)
+
+# Planned additions / fixes:
+- Reformat the report file to make it easier to read
+- Explicitly distinguish between directly required libraries and dependencies
+- Note which lines dependencies affect (at the moment thaw only identifies directly used libraries)
+
