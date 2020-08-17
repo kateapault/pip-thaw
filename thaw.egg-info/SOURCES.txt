@@ -1,5 +1,7 @@
 README.md
 setup.py
+thaw/__init__.py
+thaw/thaw.py
 thaw.egg-info/PKG-INFO
 thaw.egg-info/SOURCES.txt
 thaw.egg-info/dependency_links.txt
