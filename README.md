@@ -9,9 +9,12 @@ $ pip install thaw
 
 # Use:
 ```
-$ python3 thaw.py
+$ python 
+$ >> from thaw import thaw
+$ >> thaw.main()
 ``` 
 This generates a report file, thaw_report.txt, at the same level that thaw was run.
+Next release will allow you to just call thaw from the command line without having to go into the python interpreter. 
 
 # Info
 
