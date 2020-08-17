@@ -1,12 +1,12 @@
 Metadata-Version: 2.1
 Name: thaw
-Version: 0.1a1
+Version: 0.2a3
 Summary: Generates report showing where updates will affect your project
 Home-page: https://github.com/kateapault/pip-thaw
 Author: Kate Raskauskas
 Author-email: kateapault@gmail.com
 License: UNKNOWN
-Download-URL: https://github.com/kateapault/pip-thaw/archive/v0.1-alpha.tar.gz
+Download-URL: https://github.com/kateapault/pip-thaw/archive/v0.2-alpha.tar.gz
 Description: # THAW
         Thaw is a tool that identifies outdated libraries in your requirements.txt file and generates a report file showing you exactly where updates would affect your project.
         
