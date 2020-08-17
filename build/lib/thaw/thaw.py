@@ -1,17 +1,21 @@
+#!/usr/local/bin/python3
 """
-thaw identifies libraries in your requirements.txt file that are out of date.
+Thaw identifies libraries in your requirements.txt file that are out of date.
 Run thaw to generate a report detailing which libraries are out of date and where
 those libraries are used in your project.
+
+Requires Python 3.x
 
 Installation::
     pip install thaw
 
 Usage::
-    $ python thaw .py
+    $ thaw
 """
 import argparse
 from datetime import datetime as dt
 import os
+import platform
 import subprocess
 import sys
 from urllib import request
@@ -203,7 +207,8 @@ def search_directory_for_library(library):
 # --------------------------------------------
 
 def main():
-    
+    assert sys.version_info >= (3)
+
     scales = {
         "major": {
             "count":0,
