@@ -109,7 +109,7 @@ def check_line_for_new_variable(library_name,line_string):
 # --------------------------------------------
 
 def hacky_parse_for_library_title(html_string):
-    classname_start = html_string.find("library-header__name")
+    classname_start = html_string.find("package-header__name")
     
     inner_start = html_string[classname_start:].find(">")
     text_start = inner_start + classname_start + 1
@@ -128,8 +128,11 @@ def get_latest_version(library_name):
     data = binary_data.decode('utf-8')
     
     fulltitle = hacky_parse_for_library_title(data)
-    name, version = fulltitle.split(' ')
-    return version
+    try: 
+        name, version = fulltitle.split(' ')
+        return version
+    except:
+        print("something went wrong - can't split name and title")
 
 
 # --------------------------------------------
@@ -141,9 +144,6 @@ def check_file_for_library(filename,library):
     inputs: str:filename, str:library name
     outputs: list containing line #s (not counting 'import x') that the library is explicity in
     '''
-    # need to account for multiple submodules
-    # need to disregard if part of something eg 'cost' variable gets caught while looking for 'os' library
-    # Actually Useful and harder to code Mode: grab variables/etc made w library and identify lines using those
     f = open(filename)
     i = 0
     imported = False
@@ -153,32 +153,30 @@ def check_file_for_library(filename,library):
         line_text = str(line)
         i += 1
         if 'import' in line_text and library in line_text:
-            if library_instance_not_subword(library, line_text):
-                imported = True
-                if '#' in line_text:
-                    line_text = line_text.split('#')[0].strip()
-                    if 'as' in line_text:
-                        words_to_check = [line_text.split('as')[1].strip()]
-                    elif 'from' in line_text:
-                        modules = line_text.split('import')[1].strip()
-                        if ',' in modules:
-                            for mod in modules.split(','):
-                                words_to_check.append(mod.strip())
-                        else:
-                            words_to_check.append(modules)
-                print(f'words to check: {words_to_check}')
+            imported = True
+            print(f"imported! {line_text}")
+            if '#' in line_text:
+                line_text = line_text.split('#')[0].strip()
+            if 'as' in line_text:
+                print(f"alias found: {line_text}")
+                words_to_check = [line_text.split(' as ')[1].strip()]
+            elif 'from' in line_text:
+                modules = line_text.split('import')[1].strip()
+                if ',' in modules:
+                    for mod in modules.split(','):
+                        words_to_check.append(mod.strip())
+                else:
+                    words_to_check.append(modules)
         elif imported:
             for keyword in words_to_check:
                 if '#' in line_text:
-                    if keyword in line_text.split('#')[0]:
-                        if library_instance_not_subword(keyword, line_text.split('#')[0]) and i not in affected_lines:
-                            affected_lines.append(i)
-                            words_to_check += check_line_for_new_variable(keyword,line_text)
-                elif keyword in line_text:
-                   if library_instance_not_subword(keyword, line_text) and i not in affected_lines:
+                    if keyword in line_text.split('#')[0] and i not in affected_lines:
                         affected_lines.append(i)
                         words_to_check += check_line_for_new_variable(keyword,line_text)
-    
+                elif keyword in line_text and i not in affected_lines:
+                    affected_lines.append(i)
+                    words_to_check += check_line_for_new_variable(keyword,line_text)
+    print(f"words to check: {words_to_check}")
     f.close()
     
     return affected_lines
@@ -197,6 +195,11 @@ def search_directory_for_library(library):
                     affected_files.append({'file':filepath,'lines':affected_lines})
 
     return affected_files
+
+
+# --------------------------------------------
+# REPORT -------------------------------------
+# --------------------------------------------
     
     
 # --------------------------------------------
@@ -237,12 +240,13 @@ def main():
                     scales[scale]["count"] += 1
                     scales[scale]["libraries"].append(library)
                     affected_by_outdated_libraries[library] = search_directory_for_library(library)
-                    report_body += f"\t*{library:<40} | {current_version} >> {latest_version} | {affected_by_outdated_libraries[library]}\n"
+                    version_change = current_version + ' >> ' + latest_version
+                    report_body += f"\t*{library:<40} | {version_change:<20} | {len(affected_by_outdated_libraries[library])} files affected\n"
                 else:
                     report_body += f"\t{library:<41} | {current_version}, no update needed\n"
             else:
                 report_body += f'\t{line.strip():<41} | no version requirement\n'
-
+        cutoff = len(os.getcwd()) + 1
         report_summary = ""
         major = scales['major']['count']
         minor = scales['minor']['count']
@@ -255,20 +259,30 @@ def main():
         report_summary += f"{minor} MINOR updates, "
         print(f"{micro} MICRO updates")
         report_summary += f"{micro} MICRO updates\n"
-        report_summary += '\n\nMajor updates:'
+        report_summary += '\nMajor updates:'
         for lib in scales['major']['libraries']:
-            report_summary += f"\n[ ]{lib} - {affected_by_outdated_libraries[lib]}"
+            report_summary += f"\n[ ]{lib}"
+            for affected in affected_by_outdated_libraries[lib]:
+                report_summary += f"\n    {affected['file'][cutoff:]}"
+                report_summary += f"\n        {affected['lines']}"
         report_summary += '\n\nMinor updates:'
         for lib in scales['minor']['libraries']:
-            report_summary += f"\n[ ]{lib} - {affected_by_outdated_libraries[lib]}"
+            report_summary += f"\n[ ]{lib}"
+            for affected in affected_by_outdated_libraries[lib]:
+                report_summary += f"\n    {affected['file'][cutoff:]}"
+                report_summary += f"\n        {affected['lines']}"
         report_summary += '\n\nMicro updates:'
         for lib in scales['micro']['libraries']:
-            report_summary += f"\n[ ]{lib} - {affected_by_outdated_libraries[lib]}"
+            report_summary += f"\n[ ]{lib}"
+            for affected in affected_by_outdated_libraries[lib]:
+                report_summary += f"\n    {affected['file'][cutoff:]}"
+                report_summary += f"\n        lines {affected['lines']}"
             
             
         log.write(report_time)
-        log.write(report_summary)
         log.write(report_body)
+        log.write("\n")
+        log.write(report_summary)
         log.write("\n")
         
         requirements.close()

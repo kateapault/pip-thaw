@@ -124,12 +124,12 @@ class ThawTests(unittest.TestCase):
     def testHackyParseForLibraryTitle(self):
         html_str = '''\
         <div class="banner">
-            <div class="library-header">
-                <div class="library-header__left">
-                    <h1 class="library-header__name">
+            <div class="package-header">
+                <div class="package-header__left">
+                    <h1 class="package-header__name">
                         numpy 1.19.1
                     </h1>
-                    <p class="library-header__pip-instructions">
+                    <p class="package-header__pip-instructions">
                         <span id="pip-command">pip install numpy</span>
                         <button type="button" class="copy-tooltip copy-tooltip-s" data-clipboard-target="#pip-command" data-tooltip-label="Copy to clipboard">
                             <i class="fa fa-copy" aria-hidden="true"></i>
@@ -137,11 +137,11 @@ class ThawTests(unittest.TestCase):
                         </button>
                     </p>
                 </div>
-                <div class="library-header__right">
+                <div class="package-header__right">
                     <a class="status-badge status-badge--good" href="/project/numpy/">
                         <span>Latest version</span>
                     </a>
-                    <p class="library-header__date">
+                    <p class="package-header__date">
                         Released: <time datetime="2020-07-21T20:54:49+0000" data-controller="localized-time" data-localized-time-relative="true" data-localized-time-show-time="false" title="2020-07-21 16:54:49" aria-label="2020-07-21 16:54:49">Jul 21, 2020</time>
                     </p>
                 </div>
@@ -213,6 +213,12 @@ class ThawTests(unittest.TestCase):
         self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime'),[3,5])
         self.tearDownTempDirectory()
 
+
+    # REPORT BUILDING TESTS -------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def testStripFullDirectoryDownToProjectDirectory(self):
+        self.assertEqual(thaw.strip_full_directory_down_to_project_directory()
     
 if __name__ == '__main__':
     unittest.main()
