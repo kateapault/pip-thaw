@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
     
 setuptools.setup(
     name="thaw",
-    version="0.1",
+    version="0.2",
     author="Kate Raskauskas",
     author_email="kateapault@gmail.com",
-    description="Update CLI utility",
+    description="Generates report showing where updates will affect your project",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/kateapault/pip-thaw",
