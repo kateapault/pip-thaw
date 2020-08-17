@@ -154,6 +154,7 @@ def check_file_for_library(filename,library):
         i += 1
         if 'import' in line_text and library in line_text:
             imported = True
+            print(f"imported! {line_text}")
             if '#' in line_text:
                 line_text = line_text.split('#')[0].strip()
             if 'as' in line_text:
@@ -169,11 +170,14 @@ def check_file_for_library(filename,library):
             for keyword in words_to_check:
                 if '#' in line_text:
                     if keyword in line_text.split('#')[0] and i not in affected_lines:
+                        print(f'found one! {line_text}')
                         affected_lines.append(i)
                         words_to_check += check_line_for_new_variable(keyword,line_text)
                 elif keyword in line_text and i not in affected_lines:
                     affected_lines.append(i)
+                    print(f'found one! {line_text}')
                     words_to_check += check_line_for_new_variable(keyword,line_text)
+    print(f"words to check: {words_to_check}")
     f.close()
     
     return affected_lines
