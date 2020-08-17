@@ -1,5 +1,5 @@
 """
-pip-thaw identifies packages in your requirements.txt file that are out of date.
+pip-thaw identifies libraries in your requirements.txt file that are out of date.
 Run pip-thaw to generate a report detailing which libraries are out of date and where
 those libraries are used in your project.
 
@@ -58,31 +58,31 @@ def version_update_scale(old_version_string, new_version_string):
 
 # --------------------
 
-def package_instance_not_subword(package,line):
+def library_instance_not_subword(library,line):
     '''
-    returns True if package is indeed in line, False if it's part of another word, raises error if package name is not found in string
+    returns True if library is indeed in line, False if it's part of another word, raises error if library name is not found in string
     
     ex:
-    check_package_instance_isnt_subword('os','pathname = os.path.dirname("file")')
+    check_library_instance_isnt_subword('os','pathname = os.path.dirname("file")')
     >> True
-    check_package_name_isnt_subword('os', 'total_cost = item_price + tax')
+    check_library_name_isnt_subword('os', 'total_cost = item_price + tax')
     >> False
     '''   
-    package_name_start_ind = line.find(package)
+    library_name_start_ind = line.find(library)
 
-    if package_name_start_ind == -1:
-        raise WrongAssumptionError("package_instance_not_subword","Package name not found in line")
-    elif package_name_start_ind > 0:
-        character_before = line[package_name_start_ind - 1]
+    if library_name_start_ind == -1:
+        raise WrongAssumptionError("library_instance_not_subword","library name not found in line")
+    elif library_name_start_ind > 0:
+        character_before = line[library_name_start_ind - 1]
     else: 
         character_before = None
     
     if character_before and character_before not in ' .:()[]{}=':
         return False 
     
-    package_name_end_ind = package_name_start_ind + len(package) - 1
-    if package_name_end_ind < len(line) - 1:
-        character_after = line[package_name_end_ind + 1]
+    library_name_end_ind = library_name_start_ind + len(library) - 1
+    if library_name_end_ind < len(line) - 1:
+        character_after = line[library_name_end_ind + 1]
     else:
         character_after = None
 
@@ -94,13 +94,13 @@ def package_instance_not_subword(package,line):
 
 # --------------------
 
-def check_line_for_new_variable(package_name,line_string):
+def check_line_for_new_variable(library_name,line_string):
     '''
     Returns empty list if there is no variable assignment in the line string, 
     returns list with the variable name(s) if there is variable assignment.
     '''
-    if package_name not in line_string:
-        raise WrongAssumptionError('check_line_for_new_variable',"Keyword or package name not found in line")
+    if library_name not in line_string:
+        raise WrongAssumptionError('check_line_for_new_variable',"Keyword or library name not found in line")
     elif '=' not in line_string:
         return []
     else:
@@ -110,8 +110,8 @@ def check_line_for_new_variable(package_name,line_string):
 # PYPI SEARCH --------------------------------
 # --------------------------------------------
 
-def hacky_parse_for_package_title(html_string):
-    classname_start = html_string.find("package-header__name")
+def hacky_parse_for_library_title(html_string):
+    classname_start = html_string.find("library-header__name")
     
     inner_start = html_string[classname_start:].find(">")
     text_start = inner_start + classname_start + 1
@@ -123,13 +123,13 @@ def hacky_parse_for_package_title(html_string):
 
 # ----------------------
 
-def get_latest_version(package_name):
-    url = f"https://pypi.org/project/{package_name}/"
+def get_latest_version(library_name):
+    url = f"https://pypi.org/project/{library_name}/"
     result = request.urlopen(url)
     binary_data = result.read()
     data = binary_data.decode('utf-8')
     
-    fulltitle = hacky_parse_for_package_title(data)
+    fulltitle = hacky_parse_for_library_title(data)
     name, version = fulltitle.split(' ')
     return version
 
@@ -144,8 +144,8 @@ def check_file_for_library(filename,library):
     outputs: list containing line #s (not counting 'import x') that the library is explicity in
     '''
     # need to account for multiple submodules
-    # need to disregard if part of something eg 'cost' variable gets caught while looking for 'os' package
-    # Actually Useful and harder to code Mode: grab variables/etc made w package and identify lines using those
+    # need to disregard if part of something eg 'cost' variable gets caught while looking for 'os' library
+    # Actually Useful and harder to code Mode: grab variables/etc made w library and identify lines using those
     f = open(filename)
     i = 0
     imported = False
@@ -155,7 +155,7 @@ def check_file_for_library(filename,library):
         line_text = str(line)
         i += 1
         if 'import' in line_text and library in line_text:
-            if package_instance_not_subword(library, line_text):
+            if library_instance_not_subword(library, line_text):
                 imported = True
                 if '#' in line_text:
                     line_text = line_text.split('#')[0].strip()
@@ -173,11 +173,11 @@ def check_file_for_library(filename,library):
             for keyword in words_to_check:
                 if '#' in line_text:
                     if keyword in line_text.split('#')[0]:
-                        if package_instance_not_subword(keyword, line_text.split('#')[0]) and i not in affected_lines:
+                        if library_instance_not_subword(keyword, line_text.split('#')[0]) and i not in affected_lines:
                             affected_lines.append(i)
                             words_to_check += check_line_for_new_variable(keyword,line_text)
                 elif keyword in line_text:
-                   if package_instance_not_subword(keyword, line_text) and i not in affected_lines:
+                   if library_instance_not_subword(keyword, line_text) and i not in affected_lines:
                         affected_lines.append(i)
                         words_to_check += check_line_for_new_variable(keyword,line_text)
     
@@ -185,7 +185,7 @@ def check_file_for_library(filename,library):
     
     return affected_lines
 
-def search_directory_for_library(library='pyshorteners'):
+def search_directory_for_library(library):
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     affected_files = []
@@ -278,5 +278,8 @@ def main():
     
     except FileNotFoundError:
         print("No requirements file found - please run thaw in the top level of your project")    
+
+
+
 if __name__ == "__main__":
     main()

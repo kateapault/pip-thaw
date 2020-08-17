@@ -85,33 +85,33 @@ class ThawTests(unittest.TestCase):
     
     # ------------------------------   
     
-    def testPackageInstanceNotSubwordReturnsFalseForSubwordInMiddleOfWord(self):
-        self.assertEqual(thaw.package_instance_not_subword('os','the cost is prohibitive'),False)
+    def testLibraryInstanceNotSubwordReturnsFalseForSubwordInMiddleOfWord(self):
+        self.assertEqual(thaw.library_instance_not_subword('os','the cost is prohibitive'),False)
     
-    def testPackageInstanceNotSubwordReturnsFalseForSubwordAtBeginningOfWord(self):
-        self.assertEqual(thaw.package_instance_not_subword('os','the word ossify means to turn into bone'),False)
+    def testLibraryInstanceNotSubwordReturnsFalseForSubwordAtBeginningOfWord(self):
+        self.assertEqual(thaw.library_instance_not_subword('os','the word ossify means to turn into bone'),False)
         
-    def testPackageInstanceNotSubwordReturnsFalseForSubwordAtBeginningOfLine(self):
-        self.assertEqual(thaw.package_instance_not_subword('os','ostentatious means very showy'),False)
+    def testLibraryInstanceNotSubwordReturnsFalseForSubwordAtBeginningOfLine(self):
+        self.assertEqual(thaw.library_instance_not_subword('os','ostentatious means very showy'),False)
     
-    def testPackageInstanceNotSubwordReturnsFalseForSubwordAtEndOfWord(self):
-        self.assertEqual(thaw.package_instance_not_subword('os','kangaroos are wild animals'),False)
+    def testLibraryInstanceNotSubwordReturnsFalseForSubwordAtEndOfWord(self):
+        self.assertEqual(thaw.library_instance_not_subword('os','kangaroos are wild animals'),False)
         
-    def testPackageInstanceNotSubwordReturnsFalseForSubwordAtEndOfLine(self):
-        self.assertEqual(thaw.package_instance_not_subword('os','we tave two tenors and three sopranos'),False)
+    def testLibraryInstanceNotSubwordReturnsFalseForSubwordAtEndOfLine(self):
+        self.assertEqual(thaw.library_instance_not_subword('os','we tave two tenors and three sopranos'),False)
     
-    def testPackageInstanceNotSubwordReturnsTrueForNoSubword(self):
-        self.assertEqual(thaw.package_instance_not_subword('os','pathname = os.path.dirname("file")'),True)
+    def testLibraryInstanceNotSubwordReturnsTrueForNoSubword(self):
+        self.assertEqual(thaw.library_instance_not_subword('os','pathname = os.path.dirname("file")'),True)
     
-    def testPackageInstanceNotSubwordRaisesExceptionIfPackageNameNotInString(self):
-        self.assertRaises(thaw.WrongAssumptionError,thaw.package_instance_not_subword,"os","The package should not be found in this line")
+    def testLibraryInstanceNotSubwordRaisesExceptionIfLibraryNameNotInString(self):
+        self.assertRaises(thaw.WrongAssumptionError,thaw.library_instance_not_subword,"os","The library should not be found in this line")
 
     # ------------------------------  
     
     def testCheckLineForNewVariableWithNoVariableButLibraryPresent(self):
         self.assertEqual(thaw.check_line_for_new_variable('dt', 'dt.date.today()'),[])
         
-    def testCheckLineForNewVariableShouldThrowErrorIfPackageNameNotInString(self):
+    def testCheckLineForNewVariableShouldThrowErrorIfLibraryNameNotInString(self):
         self.assertRaises(thaw.WrongAssumptionError,thaw.check_line_for_new_variable,'dt','total = price + tax')
         
     def testCheckLineForNewVariableWithVariable(self):
@@ -121,15 +121,15 @@ class ThawTests(unittest.TestCase):
     # PYPI SEARCH METHOD TESTS -----------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     
-    def testHackyParseForPackageTitle(self):
+    def testHackyParseForLibraryTitle(self):
         html_str = '''\
         <div class="banner">
-            <div class="package-header">
-                <div class="package-header__left">
-                    <h1 class="package-header__name">
+            <div class="library-header">
+                <div class="library-header__left">
+                    <h1 class="library-header__name">
                         numpy 1.19.1
                     </h1>
-                    <p class="package-header__pip-instructions">
+                    <p class="library-header__pip-instructions">
                         <span id="pip-command">pip install numpy</span>
                         <button type="button" class="copy-tooltip copy-tooltip-s" data-clipboard-target="#pip-command" data-tooltip-label="Copy to clipboard">
                             <i class="fa fa-copy" aria-hidden="true"></i>
@@ -137,18 +137,18 @@ class ThawTests(unittest.TestCase):
                         </button>
                     </p>
                 </div>
-                <div class="package-header__right">
+                <div class="library-header__right">
                     <a class="status-badge status-badge--good" href="/project/numpy/">
                         <span>Latest version</span>
                     </a>
-                    <p class="package-header__date">
+                    <p class="library-header__date">
                         Released: <time datetime="2020-07-21T20:54:49+0000" data-controller="localized-time" data-localized-time-relative="true" data-localized-time-show-time="false" title="2020-07-21 16:54:49" aria-label="2020-07-21 16:54:49">Jul 21, 2020</time>
                     </p>
                 </div>
             </div>
         </div>
         '''
-        self.assertEqual(thaw.hacky_parse_for_package_title(html_str),'numpy 1.19.1')
+        self.assertEqual(thaw.hacky_parse_for_library_title(html_str),'numpy 1.19.1')
     
     
     # PROJECT SEARCH METHOD TESTS --------------------------------------------------------------------------------------
@@ -160,13 +160,13 @@ class ThawTests(unittest.TestCase):
         self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'idna'),[])
         self.tearDownTempDirectory()
     
-    def testCheckFileForLibraryImportLibraryAndLibraryNameIsInComment(self):
+    def testCheckFileForLibraryImportLibraryButLibraryNameIsInComment(self):
         self.setUpTempDirectory()
         self.createTempDotPyFile('import idna\nx = 3\ny = 4\nz = x + y # this does not actually use the idna library')
         self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'idna'),[])
         self.tearDownTempDirectory()
         
-    def testCheckFileForLibraryWhereLibraryNotImportedButNameIsInComment(self):
+    def testCheckFileForLibraryWhereLibraryNotImportedButNameIsOnlyInComment(self):
         self.setUpTempDirectory()
         self.createTempDotPyFile('x = 3\ny = 4\nz = x + y # this does not actually use OR import the idna library')
         self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'idna'),[])
