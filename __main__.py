@@ -1,3 +1,3 @@
-from thaww import thawww
+from src import thaw
 
-thawww.main()
+thaw.main()

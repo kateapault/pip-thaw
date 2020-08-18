@@ -4,7 +4,7 @@ import pathlib
 import unittest
 from urllib import request
 
-from thaw import thaw
+from src import thaw
 
 class ThawTests(unittest.TestCase):
     # SETUP METHODS ----------------------------------------------------------------------------------------------------
@@ -213,12 +213,6 @@ class ThawTests(unittest.TestCase):
         self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime'),[3,5])
         self.tearDownTempDirectory()
 
-
-    # REPORT BUILDING TESTS -------------------------------------------------------------------------------------------
-    # ------------------------------------------------------------------------------------------------------------------
-
-    def testStripFullDirectoryDownToProjectDirectory(self):
-        self.assertEqual(thaw.strip_full_directory_down_to_project_directory()
     
 if __name__ == '__main__':
     unittest.main()

@@ -1,8 +1,8 @@
 README.md
 setup.py
+src/__init__.py
+src/thaw.py
 thaw.egg-info/PKG-INFO
 thaw.egg-info/SOURCES.txt
 thaw.egg-info/dependency_links.txt
 thaw.egg-info/top_level.txt
-thaww/__init__.py
-thaww/thawww.py

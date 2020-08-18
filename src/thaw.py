@@ -10,7 +10,7 @@ Installation::
     pip install thaw
 
 Usage::
-    $ thaw
+    $ python -m thaw
 """
 import argparse
 from datetime import datetime as dt
@@ -276,14 +276,14 @@ def main():
             report_summary += f"\n[ ]{lib}"
             for affected in affected_by_outdated_libraries[lib]:
                 report_summary += f"\n    {affected['file'][cutoff:]}"
-                report_summary += f"\n        lines {affected['lines']}"
+                report_summary += f"\n        {affected['lines']}"
             
             
         log.write(report_time)
         log.write(report_body)
         log.write("\n")
         log.write(report_summary)
-        log.write("\n")
+        log.write("\n\n\n\n\n")
         
         requirements.close()
         log.close()
