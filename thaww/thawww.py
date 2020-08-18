@@ -290,6 +290,3 @@ def main():
     
     except FileNotFoundError:
         print("No requirements file found - please run thaw in the top level of your project")    
-
-if __name__ == '__main__':
-    __main__()
