@@ -206,7 +206,7 @@ def search_directory_for_library(library):
 # MAIN ---------------------------------------
 # --------------------------------------------
 
-def __main__():
+def main():
 
     scales = {
         "major": {
