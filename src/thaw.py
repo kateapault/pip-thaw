@@ -208,6 +208,11 @@ def search_directory_for_library(library):
 
 def main():
 
+    parser = argparse.ArgumentParser(description="Identify outdated libraries in your project dependencies and where they're used.")
+    parser.add_argument('-o','--out',action="store",help="Write thaw report file to specified file path; thaw will write timestamped .txt report file.")
+    # parser.add_argument('-v','--verbose',action="store_true",help="Include content of lines affected by out-of-date libraries (only line numbers will be written otherwise).")
+    args = parser.parse_args()
+    
     scales = {
         "major": {
             "count":0,
@@ -224,12 +229,10 @@ def main():
     }
         
     affected_by_outdated_libraries = {}
-    report_time = f"thaw report run {dt.now().strftime('%m-%d-%y %H:%M:%S')}\n"
     report_body = ""
     
     try:
         requirements = open("requirements.txt")
-        log = open(logfile,"a+")
         
         for line in requirements:
             if "==" in line:
@@ -251,13 +254,9 @@ def main():
         major = scales['major']['count']
         minor = scales['minor']['count']
         micro = scales['micro']['count']
-        print(f"{major + minor + micro} TOTAL updates")
         report_summary += f"{major + minor + micro} total updates: "
-        print(f"{major} MAJOR updates")
         report_summary += f"{major} MAJOR updates, "
-        print(f"{minor} MINOR updates")
         report_summary += f"{minor} MINOR updates, "
-        print(f"{micro} MICRO updates")
         report_summary += f"{micro} MICRO updates\n"
         report_summary += '\nMajor updates:'
         for lib in scales['major']['libraries']:
@@ -278,15 +277,24 @@ def main():
                 report_summary += f"\n    {affected['file'][cutoff:]}"
                 report_summary += f"\n        {affected['lines']}"
             
-            
-        log.write(report_time)
-        log.write(report_body)
-        log.write("\n")
-        log.write(report_summary)
-        log.write("\n\n\n\n\n")
+        if args.out:
+            now = dt.now()
+            report_title = f"thaw_report_{now.strftime('%m%d%y_%H%M%S')}.txt"
+            report_filename = os.path.join(args.out,report_title)
+            log = open(report_filename,'w')
+            log.write(f"THAW REPORT RUN {now.strftime('%m/%d/%y %H:%M:%S')}")
+            log.write('\n')
+            log.write(report_body)
+            log.write('\n')
+            log.write(report_summary)
+            log.close()
+        else:
+            print(report_body)
+            print('\n')
+            print(report_summary)
+            print('\n')
         
         requirements.close()
-        log.close()
     
     except FileNotFoundError:
         print("No requirements file found - please run thaw in the top level of your project")    
