@@ -153,6 +153,7 @@ def check_file_for_library(filename,library):
     imported = False
     words_to_check = [library]
     affected_lines = []
+    affected_lines_text = []
     for line in f:
         line_text = str(line)
         i += 1
@@ -174,13 +175,15 @@ def check_file_for_library(filename,library):
                 if '#' in line_text:
                     if keyword in line_text.split('#')[0] and i not in affected_lines:
                         affected_lines.append(i)
+                        affected_lines_text.append(line_text)
                         words_to_check += check_line_for_new_variable(keyword,line_text)
                 elif keyword in line_text and i not in affected_lines:
                     affected_lines.append(i)
+                    affected_lines_text.append(line_text)
                     words_to_check += check_line_for_new_variable(keyword,line_text)
     f.close()
     
-    return affected_lines
+    return {'linenums': affected_lines, 'linetext': affected_lines_text}
 
 def search_directory_for_library(library):
     dir_path = os.getcwd()
@@ -190,18 +193,31 @@ def search_directory_for_library(library):
         for file in files:
             if file.endswith('.py'):
                 filepath = root + '/' + file
-                affected_lines = check_file_for_library(filepath,library)
+                affected = check_file_for_library(filepath,library)
+                affected_lines = affected['linenums']
+                affected_lines_text = affected['linetext']
                 if len(affected_lines) > 0:
-                    affected_files.append({'file':filepath,'lines':affected_lines})
+                    affected_files.append({'file':filepath,'lines':affected_lines,'linestext':affected_lines_text})
 
     return affected_files
 
 
 # --------------------------------------------
-# REPORT -------------------------------------
+# REPORT BUILDING ----------------------------
 # --------------------------------------------
-    
-    
+
+    def write_report_segment(affected_by_outdated_library_dict,verbose):
+        cutoff = len(os.getcwd()) + 1
+        report_segment = ""
+        for affected in affected_by_outdated_library_dict:
+            report_segment += f"\n\t{affected['file'][cutoff:]}"
+            if verbose:
+                for i in range(0,len(affected['lines'])):
+                    report_segment += f"\n\t\t{affected['lines'][i]:<10} | {affected['linestext'][i]}"
+            else:
+                report_segment += f"\n\t{affected['lines']}"
+        return report_segment
+
 # --------------------------------------------
 # MAIN ---------------------------------------
 # --------------------------------------------
@@ -210,7 +226,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Identify outdated libraries in your project dependencies and where they're used.")
     parser.add_argument('-o','--out',action="store",help="Write thaw report file to specified file path; thaw will write timestamped .txt report file.")
-    # parser.add_argument('-v','--verbose',action="store_true",help="Include content of lines affected by out-of-date libraries (only line numbers will be written otherwise).")
+    parser.add_argument('-v','--verbose',action="store_true",help="Include content of lines affected by out-of-date libraries (only line numbers will be written otherwise).")
     args = parser.parse_args()
     
     scales = {
@@ -249,7 +265,6 @@ def main():
                     report_body += f"\t{library:<41} | {current_version}, no update needed\n"
             else:
                 report_body += f'\t{line.strip():<41} | no version requirement\n'
-        cutoff = len(os.getcwd()) + 1
         report_summary = ""
         major = scales['major']['count']
         minor = scales['minor']['count']
@@ -261,21 +276,17 @@ def main():
         report_summary += '\nMajor updates:'
         for lib in scales['major']['libraries']:
             report_summary += f"\n[ ]{lib}"
-            for affected in affected_by_outdated_libraries[lib]:
-                report_summary += f"\n    {affected['file'][cutoff:]}"
-                report_summary += f"\n        {affected['lines']}"
+            report_summary += write_report_segment(affected_by_outdated_libraries[lib],args.verbose)
         report_summary += '\n\nMinor updates:'
         for lib in scales['minor']['libraries']:
             report_summary += f"\n[ ]{lib}"
-            for affected in affected_by_outdated_libraries[lib]:
-                report_summary += f"\n    {affected['file'][cutoff:]}"
-                report_summary += f"\n        {affected['lines']}"
+            report_summary += write_report_segment(affected_by_outdated_libraries[lib],args.verbose)            
         report_summary += '\n\nMicro updates:'
         for lib in scales['micro']['libraries']:
             report_summary += f"\n[ ]{lib}"
-            for affected in affected_by_outdated_libraries[lib]:
-                report_summary += f"\n    {affected['file'][cutoff:]}"
-                report_summary += f"\n        {affected['lines']}"
+            report_summary += f"\n[ ]{lib}"
+            report_summary += write_report_segment(affected_by_outdated_libraries[lib],args.verbose)
+
             
         if args.out:
             now = dt.now()
