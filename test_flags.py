@@ -25,27 +25,27 @@ class ThawTests(unittest.TestCase):
         f = open(os.path.join(self.test_dir, 'requirements.txt'), 'w')
         if label == 'major': # library with major update needed (0.25.3 -> 1.1.0)
             f.write('pandas==0.25.3\n')
-            text = 'import pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
+            text = 'imports pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
             self.createTempDotPyFile(text)
         elif label == 'minor': # library with minor update needed (1.0.5 -> 1.1.0)
             f.write('pandas==1.0.5\n')
-            text = 'import pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
+            text = 'imports pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
             self.createTempDotPyFile(text)
         elif label == 'micro': # library with micro update needed (1.19.0 -> 1.19.1)
             f.write('numpy==1.19.0\n')
-            text = 'import numpy as np\n\na = np.arange(15).reshape(3, 5)\nprint(a)'
+            text = 'imports numpy as np\n\na = np.arange(15).reshape(3, 5)\nprint(a)'
             self.createTempDotPyFile(text)    
         elif label == 'all': # libraries with major, minor, and micro updates needed
             f.write('idna==2.9\nnumpy==1.19.0\npandas==0.25.3\n')
-            text_minor = 'import idna\n\nencoded = idna.encode("ドメイン.テスト")\nprint(idna.decode(encoded))'
+            text_minor = 'imports idna\n\nencoded = idna.encode("ドメイン.テスト")\nprint(idna.decode(encoded))'
             self.createTempDotPyFile(text_minor,'minor')
-            text_micro = 'import pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
+            text_micro = 'imports pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
             self.createTempDotPyFile(text_micro,'micro')
-            text_major = 'import numpy as np\n\na = np.arange(15).reshape(3, 5)\nprint(a)'
+            text_major = 'imports numpy as np\n\na = np.arange(15).reshape(3, 5)\nprint(a)'
             self.createTempDotPyFile(text_major,'major')
         elif label == 'none': # all libraries up to date
             f.write('pandas==1.1.0\n')
-            text = 'import pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
+            text = 'imports pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
             self.createTempDotPyFile(text)
         f.close()
     
@@ -63,11 +63,11 @@ class ThawTests(unittest.TestCase):
     # FLAG TESTS -------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=os.getcwd(),verbose=False,library=None))
+                return_value=argparse.Namespace(out=os.getcwd(),verbose=False,library=None,imports=False))
     def testFlagOutWithFlagPresent(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('all')
-        self.createTempDotPyFile('import idna #line1\n#line2\nprint idna.decode("xn--eckwd4c7c.xn--zckzah") #line3')
+        self.createTempDotPyFile('imports idna #line1\n#line2\nprint idna.decode("xn--eckwd4c7c.xn--zckzah") #line3')
         with mock.patch('sys.stdout',new = StringIO()) as mock_out:
             self.runThawInTempDirectoryAndReturn()
             
@@ -80,11 +80,11 @@ class ThawTests(unittest.TestCase):
         self.tearDownTempDirectory()
         
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=None,verbose=False,library=None))    
+                return_value=argparse.Namespace(out=None,verbose=False,library=None,imports=False))    
     def testFlagOutWithFlagAbsent(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('all')
-        self.createTempDotPyFile('import idna #line1\n#line2\nprint idna.decode("xn--eckwd4c7c.xn--zckzah") #line3')
+        self.createTempDotPyFile('imports idna #line1\n#line2\nprint idna.decode("xn--eckwd4c7c.xn--zckzah") #line3')
         with mock.patch('sys.stdout',new = StringIO()) as mock_out:
             self.runThawInTempDirectoryAndReturn()
             
@@ -97,7 +97,7 @@ class ThawTests(unittest.TestCase):
         self.tearDownTempDirectory()
 
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=None,verbose=True,library=None))
+                return_value=argparse.Namespace(out=None,verbose=True,library=None,imports=False))
     def testFlagVerboseWithFlagPresent(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('major')
@@ -109,7 +109,7 @@ class ThawTests(unittest.TestCase):
         
     
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=None,verbose=False,library=None))
+                return_value=argparse.Namespace(out=None,verbose=False,library=None,imports=False))
     def testFlagVerboseWithFlagAbsent(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('major')
@@ -120,7 +120,7 @@ class ThawTests(unittest.TestCase):
         self.tearDownTempDirectory()
         
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=None,verbose=False,library='idna'))
+                return_value=argparse.Namespace(out=None,verbose=False,library='idna',imports=False))
     def testFlagLibraryWithFlagPresentAndOneLibrary(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('all')
@@ -131,7 +131,7 @@ class ThawTests(unittest.TestCase):
         self.tearDownTempDirectory()
     
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=None,verbose=False,library='idna numpy'))
+                return_value=argparse.Namespace(out=None,verbose=False,library='idna numpy',imports=False))
     def testFlagLibraryWithFlagPresentAndTwoLibraries(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('all')
@@ -142,7 +142,7 @@ class ThawTests(unittest.TestCase):
         self.tearDownTempDirectory()
     
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=None,verbose=False,library=None))
+                return_value=argparse.Namespace(out=None,verbose=False,library=None,imports=False))
     def testFlagLibraryWithFlagAbsent(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('all')
@@ -151,6 +151,31 @@ class ThawTests(unittest.TestCase):
             report = mock_out.getvalue()
             self.assertTrue('pandas' in report and 'numpy' in report and 'idna' in report)
         self.tearDownTempDirectory()
+        
+    @mock.patch('argparse.ArgumentParser.parse_args',
+                return_value=argparse.Namespace(out=None,verbose=False,library=None,imports=True))
+    def testFlagimportsWithFlagPresent(self,mock_args):
+        self.setUpTempDirectory()
+        self.createTempRequirementsDotTxt('all')
+        os.remove(os.path.join(self.test_dir,'requirements.txt'))
+        with mock.patch('sys.stdout',new=StringIO()) as mock_out:
+            self.runThawInTempDirectoryAndReturn()
+            report = mock_out.getvalue()
+            self.assertTrue('pandas' in report and 'numpy' in report and 'idna' in report)
+        self.tearDownTempDirectory()
+        
+    @mock.patch('argparse.ArgumentParser.parse_args',
+                return_value=argparse.Namespace(out=None,verbose=False,library=None,imports=False))
+    def testFlagimportsWithFlagAbsent(self,mock_args):
+        self.setUpTempDirectory()
+        self.createTempRequirementsDotTxt('all')
+        os.remove(os.path.join(self.test_dir,'requirements.txt'))
+        with mock.patch('sys.stdout',new=StringIO()) as mock_out:
+            self.runThawInTempDirectoryAndReturn()
+            report = mock_out.getvalue()
+            self.assertEqual(report,"No requirements file found - please run thaw in the top level of your project")
+        self.tearDownTempDirectory()
+    
     
     
 

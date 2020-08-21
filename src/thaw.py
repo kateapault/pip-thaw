@@ -309,11 +309,9 @@ def main():
         print('\n')
         print(report_summary)
         print('\n')
-        
-        requirements.close()
-    
+        requirements.close() 
     except FileNotFoundError:
-        print("No requirements file found - please run thaw in the top level of your project")    
-        
+        print("No requirements file found - please run thaw in the top level of your project")  
+    
 if __name__ == "__main__":
     main()
