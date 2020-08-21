@@ -9,7 +9,7 @@ Installation::
     pip install thaw
 
 Usage::
-    $ python -m thaw ~/directory/to/search
+    $ python -m thaw ~/directory/to/search [-h] [-i IMPORT] [-l LIBRARY] [-o OUT] [-v VERBOSE]
     
 Flags::
     --import                    => searches for libraries in import statements rather than requirements.txt file
@@ -220,7 +220,7 @@ def write_report_segment(affected_by_outdated_library_dict,verbose):
             for i in range(0,len(affected['lines'])):
                 report_segment += f"\n\t\t{affected['lines'][i]:<10} | {affected['linestext'][i]}"
         else:
-            report_segment += f"\n\t{affected['lines']}"
+            report_segment += f"\n\t\t{affected['lines']}"
     return report_segment
 
 # --------------------------------------------
@@ -230,8 +230,12 @@ def write_report_segment(affected_by_outdated_library_dict,verbose):
 def main():
 
     parser = argparse.ArgumentParser(description="Identify outdated libraries in your project dependencies and where they're used.")
+    # parser.add_argument('directory',action="store",help="Top level of project directory on which to run report.")
     parser.add_argument('-o','--out',action="store",help="Write thaw report file to specified file path; thaw will write timestamped .txt report file.")
     parser.add_argument('-v','--verbose',action="store_true",help="Include content of lines affected by out-of-date libraries (only line numbers will be written otherwise).")
+    parser.add_argument('-l','--library',action="store",nargs='*',help="Search for instances of specified libraries instead of all outdated libraries.")
+    # parser.add_argument('-i','--imports',action="store_true",help="Check import statements in files instead of requirements.txt.")
+    # parser.add_argument('-m','--melt',action="store_true",help="Includes 'melt' score indicating how out of date the project's dependencies are.")
     args = parser.parse_args()
     
     scales = {
@@ -248,70 +252,84 @@ def main():
             "libraries":[],
         }
     }
-        
-    affected_by_outdated_libraries = {}
+    
+    report_summary = ""
     report_body = ""
     
-    try:
-        requirements = open("requirements.txt")
-        
-        for line in requirements:
-            if "==" in line:
-                library, current_version = line.strip().split("==")
-                latest_version = get_latest_version(library)
-                scale = version_update_scale(current_version,latest_version)
-                if scale:
-                    scales[scale]["count"] += 1
-                    scales[scale]["libraries"].append(library)
-                    affected_by_outdated_libraries[library] = search_directory_for_library(library)
-                    version_change = current_version + ' >> ' + latest_version
-                    report_body += f"\t*{library:<40} | {version_change:<20} | {len(affected_by_outdated_libraries[library])} files affected\n"
-                else:
-                    report_body += f"\t{library:<41} | {current_version}, no update needed\n"
-            else:
-                report_body += f'\t{line.strip():<41} | no version requirement\n'
-        report_summary = ""
-        major = scales['major']['count']
-        minor = scales['minor']['count']
-        micro = scales['micro']['count']
-        report_summary += f"{major + minor + micro} total updates: "
-        report_summary += f"{major} MAJOR updates, "
-        report_summary += f"{minor} MINOR updates, "
-        report_summary += f"{micro} MICRO updates\n"
-        report_summary += '\nMajor updates:'
-        for lib in scales['major']['libraries']:
-            report_summary += f"\n[ ]{lib}"
-            report_summary += write_report_segment(affected_by_outdated_libraries[lib],args.verbose)
-        report_summary += '\n\nMinor updates:'
-        for lib in scales['minor']['libraries']:
-            report_summary += f"\n[ ]{lib}"
-            report_summary += write_report_segment(affected_by_outdated_libraries[lib],args.verbose)            
-        report_summary += '\n\nMicro updates:'
-        for lib in scales['micro']['libraries']:
-            report_summary += f"\n[ ]{lib}"
-            report_summary += f"\n[ ]{lib}"
-            report_summary += write_report_segment(affected_by_outdated_libraries[lib],args.verbose)
-
+    if args.library:
+        affected_by_libraries = {}
+        report_summary += '\n'
+        for lib in args.library:
+            affected_by_libraries[lib] = search_directory_for_library(lib)
+            report_summary += f"\t{lib:<40} | {len(affected_by_libraries[lib])} files affected\n"
+            report_body += f"\n\t{lib}"
+            report_body += write_report_segment(affected_by_libraries[lib],args.verbose)
+    else: 
+        try:
+            requirements = open("requirements.txt")
+            affected_by_outdated_libraries = {}
             
-        if args.out:
-            now = dt.now()
-            report_title = f"thaw_report_{now.strftime('%m%d%y_%H%M%S')}.txt"
-            report_filename = os.path.join(args.out,report_title)
-            log = open(report_filename,'w')
-            log.write(f"THAW REPORT RUN {now.strftime('%m/%d/%y %H:%M:%S')}")
-            log.write('\n')
-            log.write(report_body)
-            log.write('\n')
-            log.write(report_summary)
-            log.close()
+            for line in requirements:
+                if "==" in line:
+                    library, current_version = line.strip().split("==")
+                    latest_version = get_latest_version(library)
+                    scale = version_update_scale(current_version,latest_version)
+                    if scale:
+                        scales[scale]["count"] += 1
+                        scales[scale]["libraries"].append(library)
+                        affected_by_outdated_libraries[library] = search_directory_for_library(library)
+                        version_change = current_version + ' >> ' + latest_version
+                        report_summary += f"\t*{library:<40} | {version_change:<20} | {len(affected_by_outdated_libraries[library])} files affected\n"
+                    else:
+                        report_summary += f"\t{library:<41} | {current_version}, no update needed\n"
+                else:
+                    report_summary += f'\t{line.strip():<41} | no version requirement\n'
 
-        print(report_body)
-        print('\n')
-        print(report_summary)
-        print('\n')
-        requirements.close() 
-    except FileNotFoundError:
-        print("No requirements file found - please run thaw in the top level of your project")  
+            major = scales['major']['count']
+            minor = scales['minor']['count']
+            micro = scales['micro']['count']
+            report_body += f"{major + minor + micro} total updates: "
+            report_body += f"{major} MAJOR updates, "
+            report_body += f"{minor} MINOR updates, "
+            report_body += f"{micro} MICRO updates\n"
+            
+            report_body += '\nMajor updates:'
+            for lib in scales['major']['libraries']:
+                report_body += f"\n[ ]{lib}"
+                report_body += write_report_segment(affected_by_outdated_libraries[lib],args.verbose)
+            
+            report_body += '\n\nMinor updates:'
+            for lib in scales['minor']['libraries']:
+                report_body += f"\n[ ]{lib}"
+                report_body += write_report_segment(affected_by_outdated_libraries[lib],args.verbose)            
+            
+            report_body += '\n\nMicro updates:'
+            for lib in scales['micro']['libraries']:
+                report_body += f"\n[ ]{lib}"
+                report_body += write_report_segment(affected_by_outdated_libraries[lib],args.verbose)
+            
+            requirements.close()     
+        
+        except FileNotFoundError:
+            print("No requirements file found - please run thaw in the top level of your project")
+    
+    if args.out:
+        now = dt.now()
+        report_title = f"thaw_report_{now.strftime('%m%d%y_%H%M%S')}.txt"
+        report_filename = os.path.join(args.out,report_title)
+        log = open(report_filename,'w')
+        log.write(f"THAW REPORT RUN {now.strftime('%m/%d/%y %H:%M:%S')}")
+        log.write('\n')
+        log.write(report_summary)
+        log.write('\n')
+        log.write(report_body)
+        log.close()
+
+    print(report_summary)
+    print('\n')
+    print(report_body)
+    print('\n')
+
     
 if __name__ == "__main__":
     main()

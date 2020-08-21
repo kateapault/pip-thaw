@@ -120,7 +120,7 @@ class ThawTests(unittest.TestCase):
         self.tearDownTempDirectory()
         
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=None,verbose=False,library='idna',imports=False))
+                return_value=argparse.Namespace(out=None,verbose=False,library=['idna'],imports=False))
     def testFlagLibraryWithFlagPresentAndOneLibrary(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('all')
@@ -131,7 +131,7 @@ class ThawTests(unittest.TestCase):
         self.tearDownTempDirectory()
     
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=None,verbose=False,library='idna numpy',imports=False))
+                return_value=argparse.Namespace(out=None,verbose=False,library=['idna', 'numpy'],imports=False))
     def testFlagLibraryWithFlagPresentAndTwoLibraries(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('all')
@@ -154,7 +154,7 @@ class ThawTests(unittest.TestCase):
         
     @mock.patch('argparse.ArgumentParser.parse_args',
                 return_value=argparse.Namespace(out=None,verbose=False,library=None,imports=True))
-    def testFlagimportsWithFlagPresent(self,mock_args):
+    def testFlagImportsWithFlagPresent(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('all')
         os.remove(os.path.join(self.test_dir,'requirements.txt'))
@@ -166,17 +166,16 @@ class ThawTests(unittest.TestCase):
         
     @mock.patch('argparse.ArgumentParser.parse_args',
                 return_value=argparse.Namespace(out=None,verbose=False,library=None,imports=False))
-    def testFlagimportsWithFlagAbsent(self,mock_args):
+    def testFlagImportsWithFlagAbsent(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('all')
         os.remove(os.path.join(self.test_dir,'requirements.txt'))
         with mock.patch('sys.stdout',new=StringIO()) as mock_out:
             self.runThawInTempDirectoryAndReturn()
             report = mock_out.getvalue()
-            self.assertEqual(report,"No requirements file found - please run thaw in the top level of your project")
+            self.assertEqual(report.strip(),"No requirements file found - please run thaw in the top level of your project")
         self.tearDownTempDirectory()
-    
-    
+
     
 
 if __name__ == '__main__':
