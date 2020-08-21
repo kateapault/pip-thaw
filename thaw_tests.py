@@ -164,60 +164,60 @@ class ThawTests(unittest.TestCase):
     def testCheckFileForLibraryNoLibraryPresent(self):
         self.setUpTempDirectory()
         self.createTempDotPyFile('here is some\nmultiline text')
-        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'idna'),[])
+        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'idna')['linenums'],[])
         self.tearDownTempDirectory()
     
     def testCheckFileForLibraryImportLibraryButLibraryNameIsInComment(self):
         self.setUpTempDirectory()
         self.createTempDotPyFile('import idna\nx = 3\ny = 4\nz = x + y # this does not actually use the idna library')
-        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'idna'),[])
+        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'idna')['linenums'],[])
         self.tearDownTempDirectory()
         
     def testCheckFileForLibraryWhereLibraryNotImportedButNameIsOnlyInComment(self):
         self.setUpTempDirectory()
         self.createTempDotPyFile('x = 3\ny = 4\nz = x + y # this does not actually use OR import the idna library')
-        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'idna'),[])
+        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'idna')['linenums'],[])
         self.tearDownTempDirectory()
     
     def testCheckFileForLibraryImportLibrary(self):
         self.setUpTempDirectory()
         self.createTempDotPyFile('import idna #line1\n#line2\nprint idna.decode("xn--eckwd4c7c.xn--zckzah") #line3')
-        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'idna'),[3])
+        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'idna')['linenums'],[3])
         self.tearDownTempDirectory()
     
     def testCheckFileForLibraryFromLibraryImportOneModule(self):
         text = 'from datetime import date #line1\n#line2\nprint(date.today()) #line3'
         self.setUpTempDirectory()
         self.createTempDotPyFile(text)
-        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime'),[3])
+        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime')['linenums'],[3])
         self.tearDownTempDirectory()
     
     def testCheckFileForLibraryFromLibraryImportTwoModules(self):
         text = 'from datetime import date, time #1\n#2\ntoday = date.today() #3\nepoch = time.time() #4'
         self.setUpTempDirectory()
         self.createTempDotPyFile(text)
-        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime'),[3,4])
+        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime')['linenums'],[3,4])
         self.tearDownTempDirectory()
 
     def testCheckFileForLibraryImportLibraryAsAlias(self):
         text = 'import datetime as dt #1\n#2\nelapsed = dt.timedelta(2) #3\nelapsed2 = dt.timedelta(3) #4'
         self.setUpTempDirectory()
         self.createTempDotPyFile(text)
-        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime'),[3,4])
+        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime')['linenums'],[3,4])
         self.tearDownTempDirectory()
     
     def testCheckFileForLibraryFromLibraryImportOneModuleAsAlias(self):
         text = 'from datetime import date as d #1\n#2\nd.today() #3'
         self.setUpTempDirectory()
         self.createTempDotPyFile(text)
-        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime'),[3])
+        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime')['linenums'],[3])
         self.tearDownTempDirectory()
     
     def testCheckFileForLibraryAndIdentifyVariables(self):
         text = 'import datetime #1\n#2\ndelta = datetime.timedelta(2) #3\n#4\ndelta * 2 #5'
         self.setUpTempDirectory()
         self.createTempDotPyFile(text)
-        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime'),[3,5])
+        self.assertEqual(thaw.check_file_for_library(os.path.join(self.test_dir, 'temp.py'),'datetime')['linenums'],[3,5])
         self.tearDownTempDirectory()
 
     

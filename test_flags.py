@@ -116,6 +116,8 @@ class ThawTests(unittest.TestCase):
             self.runThawInTempDirectoryAndReturn()
             self.assertFalse(line_text in mock_out.getvalue())
         self.tearDownTempDirectory()
+        
+    
 
 if __name__ == '__main__':
     unittest.main()
