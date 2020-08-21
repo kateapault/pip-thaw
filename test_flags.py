@@ -158,11 +158,16 @@ class ThawTests(unittest.TestCase):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('all')
         os.remove(os.path.join(self.test_dir,'requirements.txt'))
+        r = None
         with mock.patch('sys.stdout',new=StringIO()) as mock_out:
             self.runThawInTempDirectoryAndReturn()
             report = mock_out.getvalue()
             self.assertTrue('pandas' in report and 'numpy' in report and 'idna' in report)
+            r = report
+            # self.assertTrue(len(report)>0)
+        # print(r)
         self.tearDownTempDirectory()
+
         
     @mock.patch('argparse.ArgumentParser.parse_args',
                 return_value=argparse.Namespace(out=None,verbose=False,library=None,imports=False))
@@ -175,6 +180,17 @@ class ThawTests(unittest.TestCase):
             report = mock_out.getvalue()
             self.assertEqual(report.strip(),"No requirements file found - please run thaw in the top level of your project")
         self.tearDownTempDirectory()
+        
+    @mock.patch('argparse.ArgumentParser.parse_args',
+                return_value=argparse.Namespace(out=None,verbose=False,library=['numpy'],imports=True))        
+    def testIncompatibleFlagsImportsAndLibrary(self,mock_args):
+        with mock.patch('sys.stdout',new=StringIO()) as mock_out:
+            self.setUpTempDirectory()
+            self.createTempRequirementsDotTxt('minor')
+            self.runThawInTempDirectoryAndReturn()
+            report = mock_out.getvalue()
+            self.assertEqual(report.strip(),"--library and --imports flags cannot be used in the same report. Instead, please run thaw with one flag and then rerun with the other.")
+
 
     
 

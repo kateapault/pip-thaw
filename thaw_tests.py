@@ -128,6 +128,18 @@ class ThawTests(unittest.TestCase):
     # PYPI SEARCH METHOD TESTS -----------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     
+    def testGetLibrarySourceLocal(self):
+        self.setUpTempDirectory()
+        self.createTempRequirementsDotTxt('all')
+        self.assertEqual(thaw.get_library_source('minor',self.test_dir),'local')
+        self.tearDownTempDirectory()
+    
+    def testGetLibrarySourcePYPI(self):
+        self.assertEqual(thaw.get_library_source('numpy',os.getcwd()),'pypi')
+    
+    def testGetLibrarySourceOther(self):
+        self.assertEqual(thaw.get_library_source('asdfghjk',os.getcwd()),'other')
+    
     def testHackyParseForLibraryTitle(self):
         html_str = '''\
         <div class="banner">

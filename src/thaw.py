@@ -9,10 +9,10 @@ Installation::
     pip install thaw
 
 Usage::
-    $ python -m thaw ~/directory/to/search [-h] [-i IMPORT] [-l LIBRARY] [-o OUT] [-v VERBOSE]
+    $ python -m thaw ~/directory/to/search [-h] [-i IMPORTS] [-l LIBRARY] [-o OUT] [-v VERBOSE]
     
 Flags::
-    --import                    => searches for libraries in import statements rather than requirements.txt file
+    --imports                   => searches for libraries in import statements rather than requirements.txt file
     --library [lib1 lib2 ...]   => searches for specified library/ies regardless of version status
     --out [directory path]      => creates report .txt file in specified directory
     --verbose                   => includes line text in report, not just line numbers where outdated libraries are used
@@ -114,8 +114,25 @@ def check_line_for_new_variable(library_name,line_string):
         return [line_string.split('=')[0].strip()]
     
 # --------------------------------------------
-# PYPI SEARCH --------------------------------
+# PYPI / LOCAL SEARCH ------------------------
 # --------------------------------------------
+
+def get_library_source(library,project_dir):
+    local = False
+    for root, dirs, files in os.walk(project_dir):
+        for file in files:
+            if file == f"{library}.py":
+                local = True
+    if local:
+        return "local"
+    else:
+        url = f"https://pypi.org/project/{library}/"
+        try:
+            result = request.urlopen(url)
+            return "pypi"
+        except:
+            return "other"
+
 
 def hacky_parse_for_library_title(html_string):
     classname_start = html_string.find("package-header__name")
@@ -164,8 +181,6 @@ def check_file_for_library(filename,library):
         i += 1
         if 'import' in line_text and library in line_text:
             imported = True
-            if '#' in line_text:
-                line_text = line_text.split('#')[0].strip()
             if 'as' in line_text:
                 words_to_check = [line_text.split(' as ')[1].strip()]
             elif 'from' in line_text:
@@ -206,6 +221,23 @@ def search_directory_for_library(library):
 
     return affected_files
 
+def check_file_for_imports(file):
+    libraries = []
+    f = open(file)
+    for line in f:
+        line_text = str(line)
+        if 'import' in line_text:                   # this captures 'import x', 'import x as y', 'from x import a,b,c'
+            libraries.append(line_text.split(' ')[1].strip())           # future: need to check for unusual import statements?
+    f.close()
+    return libraries
+
+def search_directory_for_imports(dir_path):
+    libraries = []
+    for root, dirs, files in os.walk(dir_path):
+        for file in files:
+            if file.endswith('.py'):
+                libraries += check_file_for_imports(file)
+    return libraries   
 
 # --------------------------------------------
 # REPORT BUILDING ----------------------------
@@ -234,7 +266,7 @@ def main():
     parser.add_argument('-o','--out',action="store",help="Write thaw report file to specified file path; thaw will write timestamped .txt report file.")
     parser.add_argument('-v','--verbose',action="store_true",help="Include content of lines affected by out-of-date libraries (only line numbers will be written otherwise).")
     parser.add_argument('-l','--library',action="store",nargs='*',help="Search for instances of specified libraries instead of all outdated libraries.")
-    # parser.add_argument('-i','--imports',action="store_true",help="Check import statements in files instead of requirements.txt.")
+    parser.add_argument('-i','--imports',action="store_true",help="Check import statements in files instead of requirements.txt.")
     # parser.add_argument('-m','--melt',action="store_true",help="Includes 'melt' score indicating how out of date the project's dependencies are.")
     args = parser.parse_args()
     
@@ -256,13 +288,26 @@ def main():
     report_summary = ""
     report_body = ""
     
-    if args.library:
+    if args.library and args.imports:
+        print("--library and --imports flags cannot be used in the same report. Instead, please run thaw with one flag and then rerun with the other.")
+    elif args.imports:
+        libraries = search_directory_for_imports(os.getcwd())
+        affected_by_libraries = {}
+        libraries.sort()
+        for lib in libraries:
+            affected_by_libraries[lib] = search_directory_for_library(lib)
+            source = get_library_source(lib,os.getcwd())
+            symbol = {'pypi':'*','local':'+','other':' '}
+            report_summary += f"\t{symbol[source]}{lib:<40} | {len(affected_by_libraries[lib])} files affected\n"
+            report_body += f"\n{lib}"
+            report_body += write_report_segment(affected_by_libraries[lib],args.verbose)
+    elif args.library:
         affected_by_libraries = {}
         report_summary += '\n'
         for lib in args.library:
             affected_by_libraries[lib] = search_directory_for_library(lib)
             report_summary += f"\t{lib:<40} | {len(affected_by_libraries[lib])} files affected\n"
-            report_body += f"\n\t{lib}"
+            report_body += f"\n{lib}"
             report_body += write_report_segment(affected_by_libraries[lib],args.verbose)
     else: 
         try:
