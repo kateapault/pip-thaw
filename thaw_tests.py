@@ -1,8 +1,7 @@
-import shutil, tempfile
 import os
 import pathlib
+import shutil, tempfile
 import unittest
-from urllib import request
 
 from src import thaw
 
@@ -48,6 +47,14 @@ class ThawTests(unittest.TestCase):
     
     def tearDownTempDirectory(self):
         shutil.rmtree(self.test_dir)
+        
+    def runThawInTempDirectoryAndReturn(self):
+        temp_path = self.test_dir
+        orig_path = os.getcwd()
+        os.chdir(temp_path)
+        thaw.main()
+        os.chdir(orig_path)
+        
         
     # THIS TEST WAS TO SEE HOW TO SET UP A TEMP DIR & SWITCH TO IT; KEEPING FOR RECORD    
     # def testTempDirectoryFormation(self):

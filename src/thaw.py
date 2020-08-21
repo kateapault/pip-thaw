@@ -1,16 +1,21 @@
 #!/usr/local/bin/python3
 """
-Thaw identifies libraries in your requirements.txt file that are out of date.
-Run thaw to generate a report detailing which libraries are out of date and where
-those libraries are used in your project.
+Thaw searches through your project and generates a report detailing which libraries
+are out of date and where those libraries are used in your project.
 
-Requires Python 3.x
+Requires Python 3.3 or later
 
 Installation::
     pip install thaw
 
 Usage::
-    $ python -m thaw
+    $ python -m thaw ~/directory/to/search
+    
+Flags::
+    --import                    => searches for libraries in import statements rather than requirements.txt file
+    --library [lib1 lib2 ...]   => searches for specified library/ies regardless of version status
+    --out [directory path]      => creates report .txt file in specified directory
+    --verbose                   => includes line text in report, not just line numbers where outdated libraries are used
 """
 import argparse
 from datetime import datetime as dt
@@ -58,7 +63,7 @@ def version_update_scale(old_version_string, new_version_string):
     else:
         return "micro"
 
-# --------------------
+# -----------------------------------------------------------
 
 def library_instance_not_subword(library,line):
     '''
@@ -105,7 +110,7 @@ def check_line_for_new_variable(library_name,line_string):
         raise WrongAssumptionError('check_line_for_new_variable',"Keyword or library name not found in line")
     elif '=' not in line_string:
         return []
-    else:
+    else:                                                                                                                                                                                                                                                                                                                                                     
         return [line_string.split('=')[0].strip()]
     
 # --------------------------------------------
@@ -206,17 +211,17 @@ def search_directory_for_library(library):
 # REPORT BUILDING ----------------------------
 # --------------------------------------------
 
-    def write_report_segment(affected_by_outdated_library_dict,verbose):
-        cutoff = len(os.getcwd()) + 1
-        report_segment = ""
-        for affected in affected_by_outdated_library_dict:
-            report_segment += f"\n\t{affected['file'][cutoff:]}"
-            if verbose:
-                for i in range(0,len(affected['lines'])):
-                    report_segment += f"\n\t\t{affected['lines'][i]:<10} | {affected['linestext'][i]}"
-            else:
-                report_segment += f"\n\t{affected['lines']}"
-        return report_segment
+def write_report_segment(affected_by_outdated_library_dict,verbose):
+    cutoff = len(os.getcwd()) + 1
+    report_segment = ""
+    for affected in affected_by_outdated_library_dict:
+        report_segment += f"\n\t{affected['file'][cutoff:]}"
+        if verbose:
+            for i in range(0,len(affected['lines'])):
+                report_segment += f"\n\t\t{affected['lines'][i]:<10} | {affected['linestext'][i]}"
+        else:
+            report_segment += f"\n\t{affected['lines']}"
+    return report_segment
 
 # --------------------------------------------
 # MAIN ---------------------------------------
@@ -299,13 +304,16 @@ def main():
             log.write('\n')
             log.write(report_summary)
             log.close()
-        else:
-            print(report_body)
-            print('\n')
-            print(report_summary)
-            print('\n')
+
+        print(report_body)
+        print('\n')
+        print(report_summary)
+        print('\n')
         
         requirements.close()
     
     except FileNotFoundError:
         print("No requirements file found - please run thaw in the top level of your project")    
+        
+if __name__ == "__main__":
+    main()
