@@ -99,19 +99,23 @@ class ThawTests(unittest.TestCase):
     def testFlagVerboseWithFlagPresent(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('major')
-        
-        line_text_found = False
         line_text = 'print(df)'
         with mock.patch('sys.stdout',new = StringIO()) as mock_out:
             self.runThawInTempDirectoryAndReturn()
-            print(mock_out)
+            self.assertTrue(line_text in mock_out.getvalue())
         self.tearDownTempDirectory()
         
     
-    # @mock.patch('argparse.ArgumentParser.parse_args',
-    #             return_value=argparse.Namespace(out=None,verbose=False))
-    # def testFlagVerboseWithFlagAbsent(self,mock_args):
-    #     pass
+    @mock.patch('argparse.ArgumentParser.parse_args',
+                return_value=argparse.Namespace(out=None,verbose=False))
+    def testFlagVerboseWithFlagAbsent(self,mock_args):
+        self.setUpTempDirectory()
+        self.createTempRequirementsDotTxt('major')
+        line_text = 'print(df)'
+        with mock.patch('sys.stdout',new = StringIO()) as mock_out:
+            self.runThawInTempDirectoryAndReturn()
+            self.assertFalse(line_text in mock_out.getvalue())
+        self.tearDownTempDirectory()
 
 if __name__ == '__main__':
     unittest.main()
