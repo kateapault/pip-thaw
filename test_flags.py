@@ -63,13 +63,14 @@ class ThawTests(unittest.TestCase):
     # FLAG TESTS -------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------------------------------------------------------------------
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=os.getcwd(),verbose=False))
+                return_value=argparse.Namespace(out=os.getcwd(),verbose=False,library=None))
     def testFlagOutWithFlagPresent(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('all')
         self.createTempDotPyFile('import idna #line1\n#line2\nprint idna.decode("xn--eckwd4c7c.xn--zckzah") #line3')
-        self.runThawInTempDirectoryAndReturn()
-        
+        with mock.patch('sys.stdout',new = StringIO()) as mock_out:
+            self.runThawInTempDirectoryAndReturn()
+            
         thaw_report_file_exists = False
         for file in os.listdir(os.getcwd()):
             if fnmatch.fnmatch(file, 'thaw_report*.txt'):
@@ -79,13 +80,14 @@ class ThawTests(unittest.TestCase):
         self.tearDownTempDirectory()
         
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=None,verbose=False))    
+                return_value=argparse.Namespace(out=None,verbose=False,library=None))    
     def testFlagOutWithFlagAbsent(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('all')
         self.createTempDotPyFile('import idna #line1\n#line2\nprint idna.decode("xn--eckwd4c7c.xn--zckzah") #line3')
-        self.runThawInTempDirectoryAndReturn()
-        
+        with mock.patch('sys.stdout',new = StringIO()) as mock_out:
+            self.runThawInTempDirectoryAndReturn()
+            
         thaw_report_file_exists = False
         for file in os.listdir(self.test_dir):
             if fnmatch.fnmatch(file, 'thaw_report*.txt'):
@@ -95,7 +97,7 @@ class ThawTests(unittest.TestCase):
         self.tearDownTempDirectory()
 
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=None,verbose=True))
+                return_value=argparse.Namespace(out=None,verbose=True,library=None))
     def testFlagVerboseWithFlagPresent(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('major')
@@ -107,7 +109,7 @@ class ThawTests(unittest.TestCase):
         
     
     @mock.patch('argparse.ArgumentParser.parse_args',
-                return_value=argparse.Namespace(out=None,verbose=False))
+                return_value=argparse.Namespace(out=None,verbose=False,library=None))
     def testFlagVerboseWithFlagAbsent(self,mock_args):
         self.setUpTempDirectory()
         self.createTempRequirementsDotTxt('major')
@@ -117,6 +119,39 @@ class ThawTests(unittest.TestCase):
             self.assertFalse(line_text in mock_out.getvalue())
         self.tearDownTempDirectory()
         
+    @mock.patch('argparse.ArgumentParser.parse_args',
+                return_value=argparse.Namespace(out=None,verbose=False,library='idna'))
+    def testFlagLibraryWithFlagPresentAndOneLibrary(self,mock_args):
+        self.setUpTempDirectory()
+        self.createTempRequirementsDotTxt('all')
+        with mock.patch('sys.stdout',new=StringIO()) as mock_out:
+            self.runThawInTempDirectoryAndReturn()
+            report = mock_out.getvalue()
+            self.assertTrue('pandas' not in report and 'numpy' not in report and 'idna' in report)
+        self.tearDownTempDirectory()
+    
+    @mock.patch('argparse.ArgumentParser.parse_args',
+                return_value=argparse.Namespace(out=None,verbose=False,library='idna numpy'))
+    def testFlagLibraryWithFlagPresentAndTwoLibraries(self,mock_args):
+        self.setUpTempDirectory()
+        self.createTempRequirementsDotTxt('all')
+        with mock.patch('sys.stdout',new=StringIO()) as mock_out:
+            self.runThawInTempDirectoryAndReturn()
+            report = mock_out.getvalue()
+            self.assertTrue('pandas' not in report and 'numpy' in report and 'idna' in report)
+        self.tearDownTempDirectory()
+    
+    @mock.patch('argparse.ArgumentParser.parse_args',
+                return_value=argparse.Namespace(out=None,verbose=False,library=None))
+    def testFlagLibraryWithFlagAbsent(self,mock_args):
+        self.setUpTempDirectory()
+        self.createTempRequirementsDotTxt('all')
+        with mock.patch('sys.stdout',new=StringIO()) as mock_out:
+            self.runThawInTempDirectoryAndReturn()
+            report = mock_out.getvalue()
+            self.assertTrue('pandas' in report and 'numpy' in report and 'idna' in report)
+        self.tearDownTempDirectory()
+    
     
 
 if __name__ == '__main__':
