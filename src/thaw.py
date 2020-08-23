@@ -181,15 +181,17 @@ def check_file_for_library(filename,library):
         i += 1
         if 'import' in line_text and library in line_text:
             imported = True
-            if 'as' in line_text:
-                words_to_check = [line_text.split(' as ')[1].strip()]
-            elif 'from' in line_text:
-                modules = line_text.split('import')[1].strip()
-                if ',' in modules:
-                    for mod in modules.split(','):
-                        words_to_check.append(mod.strip())
-                else:
-                    words_to_check.append(modules)
+            if '#' in line_text:
+                line_text = line_text.split('#')[0]
+                if 'as' in line_text:
+                    words_to_check = [line_text.split(' as ')[1].strip()]
+                elif 'from' in line_text:
+                    modules = line_text.split('import')[1].strip()
+                    if ',' in modules:
+                        for mod in modules.split(','):
+                            words_to_check.append(mod.strip())
+                    else:
+                        words_to_check.append(modules)
         elif imported:
             for keyword in words_to_check:
                 if '#' in line_text:
@@ -201,6 +203,7 @@ def check_file_for_library(filename,library):
                     affected_lines.append(i)
                     affected_lines_text.append(line_text)
                     words_to_check += check_line_for_new_variable(keyword,line_text)
+
     f.close()
     
     return {'linenums': affected_lines, 'linetext': affected_lines_text}
