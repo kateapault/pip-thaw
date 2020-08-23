@@ -165,12 +165,12 @@ def get_latest_version(library_name):
 # PROJECT SEARCH -----------------------------
 # --------------------------------------------
 
-def check_file_for_library(filename,library):
+def check_file_for_library(filepath,library):
     '''
-    inputs: str:filename, str:library name
+    inputs: str:filepath, str:library name
     outputs: list containing line #s (not counting 'import x') that the library is explicity in
     '''
-    f = open(filename)
+    f = open(filepath)
     i = 0
     imported = False
     words_to_check = [library]
@@ -183,15 +183,15 @@ def check_file_for_library(filename,library):
             imported = True
             if '#' in line_text:
                 line_text = line_text.split('#')[0]
-                if 'as' in line_text:
-                    words_to_check = [line_text.split(' as ')[1].strip()]
-                elif 'from' in line_text:
-                    modules = line_text.split('import')[1].strip()
-                    if ',' in modules:
-                        for mod in modules.split(','):
-                            words_to_check.append(mod.strip())
-                    else:
-                        words_to_check.append(modules)
+            if 'as' in line_text:
+                words_to_check = [line_text.split(' as ')[1].strip()]
+            elif 'from' in line_text:
+                modules = line_text.split('import')[1].strip()
+                if ',' in modules:
+                    for mod in modules.split(','):
+                        words_to_check.append(mod.strip())
+                else:
+                    words_to_check.append(modules)
         elif imported:
             for keyword in words_to_check:
                 if '#' in line_text:
@@ -208,20 +208,21 @@ def check_file_for_library(filename,library):
     
     return {'linenums': affected_lines, 'linetext': affected_lines_text}
 
-def search_directory_for_library(library):
-    dir_path = os.getcwd()
+def search_directory_for_library(directory,library):
     affected_files = []
 
-    for root, dirs, files in os.walk(dir_path):
-        for file in files:
-            if file.endswith('.py'):
-                filepath = root + '/' + file
-                affected = check_file_for_library(filepath,library)
-                affected_lines = affected['linenums']
-                affected_lines_text = affected['linetext']
-                if len(affected_lines) > 0:
-                    affected_files.append({'file':filepath,'lines':affected_lines,'linestext':affected_lines_text})
-
+    try:
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.py'):
+                    filepath = root + '/' + file
+                    affected = check_file_for_library(filepath,library)
+                    affected_lines = affected['linenums']
+                    affected_lines_text = affected['linetext']
+                    if len(affected_lines) > 0:
+                        affected_files.append({'file':filepath,'lines':affected_lines,'linestext':affected_lines_text})
+    except:
+        raise WrongAssumptionError('search_directory_for_library',f"directory input '{directory}' is not valid directory path or is '{type(directory)}' type instead of str, bytes, or os.path object")
     return affected_files
 
 def check_file_for_imports(file):
@@ -239,15 +240,19 @@ def search_directory_for_imports(dir_path):
     for root, dirs, files in os.walk(dir_path):
         for file in files:
             if file.endswith('.py'):
-                libraries += check_file_for_imports(file)
+                filepath = root + '/' + file
+                try:
+                    libraries += check_file_for_imports(filepath)
+                except:
+                    raise WrongAssumptionError('search_directory_for_imports',f"{filepath} not found in {os.listdir(dir_path)}")
     return libraries   
 
 # --------------------------------------------
 # REPORT BUILDING ----------------------------
 # --------------------------------------------
 
-def write_report_segment(affected_by_outdated_library_dict,verbose):
-    cutoff = len(os.getcwd()) + 1
+def write_report_segment(directory,affected_by_outdated_library_dict,verbose):
+    cutoff = len(directory) + 1
     report_segment = ""
     for affected in affected_by_outdated_library_dict:
         report_segment += f"\n\t{affected['file'][cutoff:]}"
@@ -265,7 +270,7 @@ def write_report_segment(affected_by_outdated_library_dict,verbose):
 def main():
 
     parser = argparse.ArgumentParser(description="Identify outdated libraries in your project dependencies and where they're used.")
-    # parser.add_argument('directory',action="store",help="Top level of project directory on which to run report.")
+    parser.add_argument('directory',action="store",help="Top level of project directory on which to run report.")
     parser.add_argument('-o','--out',action="store",help="Write thaw report file to specified file path; thaw will write timestamped .txt report file.")
     parser.add_argument('-v','--verbose',action="store_true",help="Include content of lines affected by out-of-date libraries (only line numbers will be written otherwise).")
     parser.add_argument('-l','--library',action="store",nargs='*',help="Search for instances of specified libraries instead of all outdated libraries.")
@@ -294,27 +299,27 @@ def main():
     if args.library and args.imports:
         print("--library and --imports flags cannot be used in the same report. Instead, please run thaw with one flag and then rerun with the other.")
     elif args.imports:
-        libraries = search_directory_for_imports(os.getcwd())
+        libraries = search_directory_for_imports(args.directory)
         affected_by_libraries = {}
         libraries.sort()
         for lib in libraries:
-            affected_by_libraries[lib] = search_directory_for_library(lib)
-            source = get_library_source(lib,os.getcwd())
+            affected_by_libraries[lib] = search_directory_for_library(args.directory,lib)
+            source = get_library_source(lib,args.directory)
             symbol = {'pypi':'*','local':'+','other':' '}
             report_summary += f"\t{symbol[source]}{lib:<40} | {len(affected_by_libraries[lib])} files affected\n"
             report_body += f"\n{lib}"
-            report_body += write_report_segment(affected_by_libraries[lib],args.verbose)
+            report_body += write_report_segment(args.directory,affected_by_libraries[lib],args.verbose)
     elif args.library:
         affected_by_libraries = {}
         report_summary += '\n'
         for lib in args.library:
-            affected_by_libraries[lib] = search_directory_for_library(lib)
+            affected_by_libraries[lib] = search_directory_for_library(args.directory,lib)
             report_summary += f"\t{lib:<40} | {len(affected_by_libraries[lib])} files affected\n"
             report_body += f"\n{lib}"
-            report_body += write_report_segment(affected_by_libraries[lib],args.verbose)
+            report_body += write_report_segment(args.directory,affected_by_libraries[lib],args.verbose)
     else: 
         try:
-            requirements = open("requirements.txt")
+            requirements = open(os.path.join(args.directory,"requirements.txt"))
             affected_by_outdated_libraries = {}
             
             for line in requirements:
@@ -325,7 +330,7 @@ def main():
                     if scale:
                         scales[scale]["count"] += 1
                         scales[scale]["libraries"].append(library)
-                        affected_by_outdated_libraries[library] = search_directory_for_library(library)
+                        affected_by_outdated_libraries[library] = search_directory_for_library(args.directory,library)
                         version_change = current_version + ' >> ' + latest_version
                         report_summary += f"\t*{library:<40} | {version_change:<20} | {len(affected_by_outdated_libraries[library])} files affected\n"
                     else:
@@ -344,17 +349,17 @@ def main():
             report_body += '\nMajor updates:'
             for lib in scales['major']['libraries']:
                 report_body += f"\n[ ]{lib}"
-                report_body += write_report_segment(affected_by_outdated_libraries[lib],args.verbose)
+                report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose)
             
             report_body += '\n\nMinor updates:'
             for lib in scales['minor']['libraries']:
                 report_body += f"\n[ ]{lib}"
-                report_body += write_report_segment(affected_by_outdated_libraries[lib],args.verbose)            
+                report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose)            
             
             report_body += '\n\nMicro updates:'
             for lib in scales['micro']['libraries']:
                 report_body += f"\n[ ]{lib}"
-                report_body += write_report_segment(affected_by_outdated_libraries[lib],args.verbose)
+                report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose)
             
             requirements.close()     
         
