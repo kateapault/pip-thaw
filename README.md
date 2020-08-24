@@ -43,6 +43,7 @@ Thaw was created because it's super frustrating to update libraries for a projec
 ✅  &nbsp; Thaw creates a report file, thaw_report.txt, detailing all of that information
 
 
+
 # Notes / planned additions:
 - Explicitly distinguish between directly required libraries and dependencies
 - Note dependency-affected lines as well as directly affected lines
