@@ -6,7 +6,7 @@ are out of date and where those libraries are used in your project.
 Requires Python 3.3 or later
 
 Installation::
-    pip install thaw
+    $ pip install thaw
 
 Usage::
     $ python -m thaw ~/directory/to/search [-h] [-i IMPORTS] [-l LIBRARY] [-o OUT] [-v VERBOSE]
@@ -25,21 +25,14 @@ import subprocess
 import sys
 from urllib import request
 
-
-# --------------------------------------------
-# SETTINGS -----------------------------------
-# --------------------------------------------
-
-logfile = "thaw_report.txt"
-
 class WrongAssumptionError(Exception):
     def __init__(self,expression,message):
         self.expression = expression
         self.message = message
 
-# --------------------------------------------
-# HELPERS ------------------------------------
-# --------------------------------------------
+# -----------------------------------------------------------
+# HELPER FUNCTIONS ------------------------------------------
+# -----------------------------------------------------------
 
 def version_update_scale(old_version_string, new_version_string):
     """"
@@ -99,7 +92,7 @@ def library_instance_not_subword(library,line):
     return True
 
 
-# --------------------
+# -----------------------------------------------------------
 
 def check_line_for_new_variable(library_name,line_string):
     '''
@@ -113,9 +106,9 @@ def check_line_for_new_variable(library_name,line_string):
     else:                                                                                                                                                                                                                                                                                                                                                     
         return [line_string.split('=')[0].strip()]
     
-# --------------------------------------------
-# PYPI / LOCAL SEARCH ------------------------
-# --------------------------------------------
+# -----------------------------------------------------------
+# PYPI / LOCAL SEARCH ---------------------------------------
+# -----------------------------------------------------------
 
 def get_library_source(library,project_dir):
     local = False
@@ -133,6 +126,7 @@ def get_library_source(library,project_dir):
         except:
             return "other"
 
+# -----------------------------------------------------------
 
 def hacky_parse_for_library_title(html_string):
     classname_start = html_string.find("package-header__name")
@@ -145,7 +139,7 @@ def hacky_parse_for_library_title(html_string):
     
     return html_string[text_start:text_end].strip()
 
-# ----------------------
+# -----------------------------------------------------------
 
 def get_latest_version(library_name):
     url = f"https://pypi.org/project/{library_name}/"
@@ -161,9 +155,9 @@ def get_latest_version(library_name):
         print("something went wrong - can't split name and title")
 
 
-# --------------------------------------------
-# PROJECT SEARCH -----------------------------
-# --------------------------------------------
+# -----------------------------------------------------------
+# PROJECT SEARCH --------------------------------------------
+# -----------------------------------------------------------
 
 def check_file_for_library(filepath,library):
     '''
@@ -206,9 +200,10 @@ def check_file_for_library(filepath,library):
     
     return {'linenums': affected_lines, 'linetext': affected_lines_text}
 
+# -----------------------------------------------------------
+
 def search_directory_for_library(directory,library):
     affected_files = []
-
     try:
         for root, dirs, files in os.walk(directory):
             for file in files:
@@ -222,6 +217,8 @@ def search_directory_for_library(directory,library):
     except:
         raise WrongAssumptionError('search_directory_for_library',f"directory input '{directory}' is not valid directory path or is '{type(directory)}' type instead of str, bytes, or os.path object")
     return affected_files
+
+# -----------------------------------------------------------
 
 def check_file_for_imports(file):
     libraries = []
@@ -244,9 +241,9 @@ def search_directory_for_imports(dir_path):
                     raise WrongAssumptionError('search_directory_for_imports',f"{filepath} not found in {os.listdir(dir_path)}")
     return libraries   
 
-# --------------------------------------------
-# REPORT BUILDING ----------------------------
-# --------------------------------------------
+# -----------------------------------------------------------
+# REPORT BUILDING -------------------------------------------
+# -----------------------------------------------------------
 
 def write_report_segment(directory,affected_by_outdated_library_dict,verbose):
     cutoff = len(directory) + 1
@@ -260,9 +257,23 @@ def write_report_segment(directory,affected_by_outdated_library_dict,verbose):
             report_segment += f"\n\t\t{affected['lines']}"
     return report_segment
 
-# --------------------------------------------
-# MAIN ---------------------------------------
-# --------------------------------------------
+# -----------------------------------------------------------
+
+def write_report_segments_for_scales(scales_dict,affected_by_outdated_libraries,directory,verbose):
+    report_segments = ''
+    if len(scales_dict['count']) > 0:
+        for lib in scales_dict['libraries']:
+            report_segments += f"\n[ ]{lib}"
+            report_segments += write_report_segment(directory,affected_by_outdated_libraries[lib],verbose)
+    else:
+        report_segments += "\nNone"
+        
+    return report_segments
+
+
+# -----------------------------------------------------------
+# MAIN ------------------------------------------------------
+# -----------------------------------------------------------
 
 def main():
 
@@ -344,15 +355,20 @@ def main():
                 report_body += f"{micro} MICRO updates\n"
                 
                 report_body += '\nMajor updates:'
-                for lib in scales['major']['libraries']:
-                    report_body += f"\n[ ]{lib}"
-                    report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose)
+                if len(scales['major']['libraries']) > 0:
+                    for lib in scales['major']['libraries']:
+                        report_body += f"\n[ ]{lib}"
+                        report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose)
+                else:
+                    report_body += "\nNone"
                 
                 report_body += '\n\nMinor updates:'
-                for lib in scales['minor']['libraries']:
-                    report_body += f"\n[ ]{lib}"
-                    report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose)            
-                
+                if len(scales['minor']['libraries']) > 0:
+                    for lib in scales['minor']['libraries']:
+                        report_body += f"\n[ ]{lib}"
+                        report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose)            
+                else: 
+                    report_body += "\nNone"
                 report_body += '\n\nMicro updates:'
                 for lib in scales['micro']['libraries']:
                     report_body += f"\n[ ]{lib}"
