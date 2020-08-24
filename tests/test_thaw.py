@@ -3,7 +3,7 @@ import pathlib
 import shutil, tempfile
 import unittest
 
-from src import thaw
+from thaw import thaw
 
 class ThawTests(unittest.TestCase):
     # SETUP METHODS ----------------------------------------------------------------------------------------------------

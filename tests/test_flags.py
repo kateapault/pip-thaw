@@ -7,7 +7,7 @@ import shutil, tempfile
 import unittest
 from unittest import mock
 
-from src import thaw
+from thaw import thaw
 
 class ThawTests(unittest.TestCase):
     # SETUP METHODS ----------------------------------------------------------------------------------------------------

@@ -1,7 +1,10 @@
 README.md
 setup.py
-src/__init__.py
-src/thaw.py
+tests/__init__.py
+tests/test_flags.py
+tests/test_thaw.py
+thaw/__init__.py
+thaw/thaw.py
 thaw.egg-info/PKG-INFO
 thaw.egg-info/SOURCES.txt
 thaw.egg-info/dependency_links.txt
