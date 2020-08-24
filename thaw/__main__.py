@@ -1,4 +1,4 @@
-import thaw
+from thaw import thaw
 
 def run():
     thaw.main()
