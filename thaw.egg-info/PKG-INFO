@@ -1,61 +1,100 @@
 Metadata-Version: 2.1
 Name: thaw
-Version: 0.5.5
-Summary: Generates report showing where updates will affect your project
+Version: 1.0.0
+Summary: Generates report showing where dependencies affect your project
 Home-page: https://github.com/kateapault/pip-thaw
 Author: Kate Raskauskas
 Author-email: kateapault@gmail.com
 License: UNKNOWN
-Download-URL: https://github.com/kateapault/pip-thaw/archive/v0.5.5.tar.gz
-Description: # THAW
-        Thaw is a tool that identifies outdated libraries in your requirements.txt file and generates a report file showing you exactly where updates would affect your project.
+Download-URL: https://github.com/kateapault/pip-thaw/archive/v1.0.0.tar.gz
+Description: # thaw 
         
-        # Python 3 
-        Not compatible with Python 2
+        ![PyPI](https://img.shields.io/pypi/v/thaw?color=purple) [![Coverage Status](https://coveralls.io/repos/github/kateapault/pip-thaw/badge.svg?branch=master)](https://coveralls.io/github/kateapault/pip-thaw?branch=master) ![GitHub issues](https://img.shields.io/github/issues/kateapault/pip-thaw) ![PyPI - License](https://img.shields.io/pypi/l/thaw) ![PyPI - Wheel](https://img.shields.io/pypi/wheel/thaw)
         
-        # Install:
+        
+        **thaw** is a command line tool that identifies precisely where project dependencies are used. It is designed to help with CI and with general project updates by providing a roadmap of where dependency updates would impact your project.
+        
+        By default thaw looks at the project's ```requirements.txt``` file, and there are also options to search for dependencies based on import statements or to only report where specific libraries are used. 
+        
+        [See planned features and progress here.](https://github.com/users/kateapault/projects/1)
+        
+        **Requires Python 3. Not compatible with Python 2. Tested with Python 3.7/3.8**
+        
+        
+        
+        ## Installation
+        You can install thaw with pip and PyPI:
         ```
-        $ pip install thaw
+        $ pip3 install thaw
         ```
         
-        # Run:
+        ## Use
+        thaw takes one positional argument, the root/top level of your project directory. 
         
-        Thaw *must* be run on the same level as your requirements.txt file (usually at the top level of your project).
+        Running thaw with its default settings will look through your ```requirements.txt``` file and print a report of where they're used to stdout:
         
         ```
-        $ python -m thaw
+        $ python3 -m thaw .
         ``` 
-        or
+        
+        You can write the report to a .txt file with the ```--out``` flag. This creates a timestamped file in the location you specify:
         ```
-        $ python3 -m thaw
+        python3 -m thaw . ---out /put/report/here
         ```
-        This generates a report file, thaw_report.txt, at the same level that thaw was run.
         
-        # Use Cases
-        Thaw is helpful for CI and for updating project dependencies.
+        By default, the report will have filepaths relative to the project's root directory and line numbers for each affected file. You can have the report include the line content by using the ```--verbose``` flag:
+        ```
+        python3 -m thaw . --verbose
+        ```
         
+        If you have no ```requirements.txt``` file or if you want to get a report on where all dependencies are used, use the ```--imports``` flag:
+        ```
+        python3 -m thaw . --imports
+        ```
         
-        # Info
+        Alternatively, if you want to search for one or several libraries in particular, use the ```--library``` flag and enter the names of the libraries separated by spaces:
+        ```
+        python3 -m thaw . --library pandas numpy
+        ```
         
-        Thaw was created because it's super frustrating to update libraries for a project and then cycle through running your project and fixing a single error at a time. Thaw tells you which libraries are used where, including variables made with those libraries, so you can easily pinpoint where problems may occur and have a roadmap for fixing update-induced errors.
+        ## Example report
+        ```
+        	*library1                                 | 2.9 >> 2.10          | 2 files affected
+        	*library2                                 | 3.8 >> 4.0           | 1 files affected
+        	library3                                  | 4.9.1, no update needed
+        	library4                                  | no version number listed
         
-        ✅  &nbsp; Thaw uses only built-in Python libraries - no dependencies to download
+        2 total updates: 1 MAJOR updates, 1 MINOR updates, 0 MICRO updates
         
-        ✅  &nbsp; Thaw checks requirements.txt for outdated versions and then searches your entire project
+        Major updates:
+        [ ]library2
+        	file3.py
+        		[19, 22, 23, 28, 47, 49]
+            file4.py
+                [6, 12, 13, 14, 110, 212, 213]
         
-        ✅  &nbsp; Thaw identifies files in the project that use these outdated versions
+        Minor updates:
+        [ ]library1
+            file1.py
+        		[14, 15, 16, 22, 87, 88, 209, 211, 212]
+            file2.py
+                [16, 18, 21]
+            file3.py
+                [24, 89, 134, 137]
         
-        ✅  &nbsp; Thaw identifies which lines in those files use these outdated versions
+        Micro updates:
+        none
         
-        ✅  &nbsp; Thaw identifies any variables in those files that are made with outdated library versions
+        ```
         
-        ✅  &nbsp; Thaw creates a report file, thaw_report.txt, detailing all of that information
+        ## Bugs/Requests
+        Please use the [GitHub issue tracker](https://github.com/kateapault/pip-thaw/issues) to submit bugs or request features. 
         
+        You can check planned features on thaw's [GitHub project board](https://github.com/users/kateapault/projects/1).
         
+        ## Background
         
-        # Notes / planned additions:
-        - Explicitly distinguish between directly required libraries and dependencies
-        - Note dependency-affected lines as well as directly affected lines
+        thaw was created because it's super frustrating to update project dependencies and then play whack-a-mole with errors. The report thaw generates tells you which libraries are used where, including variables made with those libraries, so you can easily pinpoint where problems may occur and have a roadmap for fixing update-induced errors. 
 Keywords: thaw update freeze pip requirements library manage package development project
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3

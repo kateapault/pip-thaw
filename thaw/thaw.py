@@ -111,6 +111,12 @@ def check_line_for_new_variable(library_name,line_string):
 # -----------------------------------------------------------
 
 def get_library_source(library,project_dir):
+    '''
+    Takes in library name string and project directory location
+    Outputs "pypi", "local", or "other" depending on whether the library 
+    is a dependency found on pypi, a local dependency within the project, 
+    or something else/not found in the project
+    '''
     local = False
     for root, dirs, files in os.walk(project_dir):
         for file in files:
@@ -142,6 +148,10 @@ def hacky_parse_for_library_title(html_string):
 # -----------------------------------------------------------
 
 def get_latest_version(library_name):
+    '''
+    Takes in library name as string, looks it up on pypi, and returns 
+    current version number as string
+    '''
     url = f"https://pypi.org/project/{library_name}/"
     result = request.urlopen(url)
     binary_data = result.read()
@@ -283,7 +293,6 @@ def main():
     parser.add_argument('-v','--verbose',action="store_true",help="Include content of lines affected by out-of-date libraries (only line numbers will be written otherwise).")
     parser.add_argument('-l','--library',action="store",nargs='*',help="Search for instances of specified libraries instead of all outdated libraries.")
     parser.add_argument('-i','--imports',action="store_true",help="Check import statements in files instead of requirements.txt.")
-    # parser.add_argument('-m','--melt',action="store_true",help="Includes 'melt' score indicating how out of date the project's dependencies are.")
     args = parser.parse_args()
     
     scales = {
@@ -387,7 +396,6 @@ def main():
             log.write(report_summary)
             log.write('\n')
             log.write(report_body)
-
     print(report_summary)
     print('\n')
     print(report_body)
