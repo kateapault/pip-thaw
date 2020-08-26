@@ -2,7 +2,7 @@ import setuptools
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
-    
+
 setuptools.setup(
     name="thaw",
     version="1.0.0",
@@ -22,4 +22,9 @@ setuptools.setup(
     ],
     python_requires='>=3.0',
     keywords="thaw update freeze pip requirements library manage package development project",
+    entry_points={
+        'console_scripts': [
+            'thaw = thaw.thaw:main'
+        ]
+    },
 )
