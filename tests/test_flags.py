@@ -42,6 +42,10 @@ class ThawTests(unittest.TestCase):
                 self.createTempDotPyFile(text_micro,'micro')
                 text_major = 'import numpy as np\n\na = np.arange(15).reshape(3, 5)\nprint(a)'
                 self.createTempDotPyFile(text_major,'major')
+            elif label == 'optional':
+                f.write('tablib[xls, xlsx]==1.1.0')
+                text = "import tablib\n\ndata = tablib.Dataset(headers=['First Name', 'Last Name', 'Age'])\nfor i in [('Kenneth', 'Reitz', 22), ('Bessie', 'Monke', 21)]:\n\tdata.append(i)\ndata.export('xls')"
+                self.createTempDotPyFile(text)
             elif label == 'none': # all libraries up to date
                 f.write('pandas==1.1.0\n')
                 text = 'import pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
@@ -203,19 +207,19 @@ class ThawTests(unittest.TestCase):
                 self.assertEqual(report.strip(),"--library and --imports flags cannot be used in the same report. Instead, please run thaw with one flag and then rerun with the other.")
         runThawWithMockArgs()
         self.tearDownTempDirectory
-    
-    def testIfMockParamsCanBePassedWithinTest(self):
+        
+    def testOptionalDependencies(self):
         self.setUpTempDirectory()
-        self.createTempRequirementsDotTxt('all')
+        self.createTempRequirementsDotTxt('optional')
         @mock.patch('argparse.ArgumentParser.parse_args',
-                    return_value=argparse.Namespace(directory=self.test_dir,out=None,verbose=False,library=['numpy'],imports=False))
-        def runningThaw(mock_args):
+                return_value=argparse.Namespace(directory=self.test_dir,out=None,verbose=False,library=None,imports=False))        
+        def runThawWithMockArgs(mock_args):
             with mock.patch('sys.stdout',new=StringIO()) as mock_out:
                 thaw.main()
                 report = mock_out.getvalue()
-                self.assertTrue('pandas' not in report and 'numpy' in report and 'idna' not in report)
-        runningThaw()
-        self.tearDownTempDirectory()
+                self.assertTrue('1 MAJOR' in report)
+        runThawWithMockArgs()
+        self.tearDownTempDirectory
         
         
     def testDirectorySameAsRunLocation(self):

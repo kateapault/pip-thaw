@@ -153,17 +153,20 @@ def get_latest_version(library_name):
     current version number as string
     '''
     url = f"https://pypi.org/project/{library_name}/"
-    result = request.urlopen(url)
-    binary_data = result.read()
-    data = binary_data.decode('utf-8')
-    
-    fulltitle = hacky_parse_for_library_title(data)
-    try: 
-        name, version = fulltitle.split(' ')
-        return version
+    try:
+        result = request.urlopen(url)
+        binary_data = result.read()
+        data = binary_data.decode('utf-8')
+        fulltitle = hacky_parse_for_library_title(data)
+        try: 
+            name, version = fulltitle.split(' ')
+            return version
+        except:
+            raise WrongAssumptionError('get_latest_version',f"unable to split name and version properly. Full text is: \n{fulltext}")
+            return None
     except:
-        print("something went wrong - can't split name and title")
-
+        raise WrongAssumptionError('get_latest_version',f"unable to connect to {url}")
+        return None
 
 # -----------------------------------------------------------
 # PROJECT SEARCH --------------------------------------------
@@ -271,7 +274,7 @@ def write_report_segment(directory,affected_by_outdated_library_dict,verbose):
 
 def write_report_segments_for_scales(scales_dict,affected_by_outdated_libraries,directory,verbose):
     report_segments = ''
-    if len(scales_dict['count']) > 0:
+    if len(scales_dict) > 0:
         for lib in scales_dict['libraries']:
             report_segments += f"\n[ ]{lib}"
             report_segments += write_report_segment(directory,affected_by_outdated_libraries[lib],verbose)
@@ -342,16 +345,19 @@ def main():
                 for line in requirements:
                     if "==" in line:
                         library, current_version = line.strip().split("==")
+                        if '[' in library:
+                            library = library.split('[')[0]
                         latest_version = get_latest_version(library)
-                        scale = version_update_scale(current_version,latest_version)
-                        if scale:
-                            scales[scale]["count"] += 1
-                            scales[scale]["libraries"].append(library)
-                            affected_by_outdated_libraries[library] = search_directory_for_library(args.directory,library)
-                            version_change = current_version + ' >> ' + latest_version
-                            report_summary += f"\t*{library:<40} | {version_change:<20} | {len(affected_by_outdated_libraries[library])} files affected\n"
-                        else:
-                            report_summary += f"\t{library:<41} | {current_version}, no update needed\n"
+                        if latest_version:
+                            scale = version_update_scale(current_version,latest_version)
+                            if scale:
+                                scales[scale]["count"] += 1
+                                scales[scale]["libraries"].append(library)
+                                affected_by_outdated_libraries[library] = search_directory_for_library(args.directory,library)
+                                version_change = current_version + ' >> ' + latest_version
+                                report_summary += f"\t*{library:<40} | {version_change:<20} | {len(affected_by_outdated_libraries[library])} files affected\n"
+                            else:
+                                report_summary += f"\t{library:<41} | {current_version}, no update needed\n"
                     else:
                         report_summary += f'\t{line.strip():<41} | no version requirement\n'
 
@@ -379,9 +385,10 @@ def main():
                 else: 
                     report_body += "\nNone"
                 report_body += '\n\nMicro updates:'
-                for lib in scales['micro']['libraries']:
-                    report_body += f"\n[ ]{lib}"
-                    report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose) 
+                if len(scales['micro']['libraries']) > 0:
+                    for lib in scales['micro']['libraries']:
+                        report_body += f"\n[ ]{lib}"
+                        report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose) 
             
         except FileNotFoundError:
             print("No requirements file found - please run thaw in the top level of your project")

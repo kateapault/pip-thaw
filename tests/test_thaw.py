@@ -39,6 +39,10 @@ class ThawTests(unittest.TestCase):
             self.createTempDotPyFile(text_micro,'micro')
             text_major = 'import numpy as np\n\na = np.arange(15).reshape(3, 5)\nprint(a)'
             self.createTempDotPyFile(text_major,'major')
+        elif label == 'optional':
+            f.write('tablib[xls, xlsx]==2.0.0')
+            text = "import tablib\n\ndata = tablib.Dataset(headers=['First Name', 'Last Name', 'Age'])\nfor i in [('Kenneth', 'Reitz', 22), ('Bessie', 'Monke', 21)]:\n\tdata.append(i)\ndata.export('xls')"
+            self.createTempDotPyFile(text)
         elif label == 'none': # all libraries up to date
             f.write('pandas==1.1.0\n')
             text = 'import pandas as pd\n\ndf = pd.DataFrame({"Age": [22, 35, 58],"Sex": ["male", "male", "female"]})\nprint(df)'
