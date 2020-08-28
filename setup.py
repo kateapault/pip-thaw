@@ -5,14 +5,14 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="thaw",
-    version="1.0.1",
+    version="1.0.2",
     author="Kate Raskauskas",
     author_email="kateapault@gmail.com",
     description="Generates report showing where dependencies affect your project",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/kateapault/pip-thaw",
-    download_url="https://github.com/kateapault/pip-thaw/archive/v1.0.1.tar.gz",
+    download_url="https://github.com/kateapault/pip-thaw/archive/v1.0.2.tar.gz",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

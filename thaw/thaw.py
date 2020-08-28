@@ -191,6 +191,7 @@ def get_libraries_and_versions_from_requirements(filepath):
                     library, versions = line_text.split('>')
                     lower_version, higher_version = versions.split(',')
                     if '<=' in higher_version: higher_version = higher_version[2:]; higher_version = higher_version[1:]
+                    version = higher_version
                 elif '>=' in line_text or '>' in line_text:
                     library = line_text.split('>')[0]
                     version = None
