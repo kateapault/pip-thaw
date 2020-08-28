@@ -19,6 +19,7 @@ Flags::
 """
 import argparse
 from datetime import datetime as dt
+import fnmatch
 import os
 import platform
 import subprocess
@@ -196,10 +197,13 @@ def get_libraries_and_versions_from_requirements(filepath):
                 else:
                     library = line_text
                     version = None
+            else:
+                library = None
                                 
-            if '[' in library:
-                library = library.split('[')[0]
-            libraries.append({'library':library,'version':version})
+            if library:
+                if '[' in library:
+                    library = library.split('[')[0]
+                libraries += [{'library':library,'version':version}]
     return libraries
 
 def check_file_for_library(filepath,library):
@@ -380,7 +384,7 @@ def main():
                 library = item['library']
                 current_version = item['version']
                 source = get_library_source(library,args.directory)
-                if source == 'pypi':
+                if source == 'pypi' and current_version:
                     latest_version = get_latest_version(library)
                 else:
                     latest_version = None
@@ -395,34 +399,36 @@ def main():
                         report_summary += f"\t*{library:<40} | {version_change:<20} | {len(affected_by_outdated_libraries[library])} files affected\n"
                     else:
                         report_summary += f"\t{library:<41} | {current_version}, no update needed\n"
-                major = scales['major']['count']
-                minor = scales['minor']['count']
-                micro = scales['micro']['count']
-                report_body += f"{major + minor + micro} total updates: "
-                report_body += f"{major} MAJOR updates, "
-                report_body += f"{minor} MINOR updates, "
-                report_body += f"{micro} MICRO updates\n"
-                
-                report_body += '\nMajor updates:'
-                if len(scales['major']['libraries']) > 0:
-                    for lib in scales['major']['libraries']:
-                        report_body += f"\n[ ]{lib}"
-                        report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose)
-                else:
-                    report_body += "\nNone"
-                
-                report_body += '\n\nMinor updates:'
-                if len(scales['minor']['libraries']) > 0:
-                    for lib in scales['minor']['libraries']:
-                        report_body += f"\n[ ]{lib}"
-                        report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose)            
-                else: 
-                    report_body += "\nNone"
-                report_body += '\n\nMicro updates:'
-                if len(scales['micro']['libraries']) > 0:
-                    for lib in scales['micro']['libraries']:
-                        report_body += f"\n[ ]{lib}"
-                        report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose) 
+            major = scales['major']['count']
+            minor = scales['minor']['count']
+            micro = scales['micro']['count']
+            report_body += f"{major + minor + micro} total updates: "
+            report_body += f"{major} MAJOR updates, "
+            report_body += f"{minor} MINOR updates, "
+            report_body += f"{micro} MICRO updates\n"
+            
+            report_body += '\nMajor updates:'
+            if len(scales['major']['libraries']) > 0:
+                for lib in scales['major']['libraries']:
+                    report_body += f"\n[ ]{lib}"
+                    report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose)
+            else:
+                report_body += "\nNone"
+            
+            report_body += '\n\nMinor updates:'
+            if len(scales['minor']['libraries']) > 0:
+                for lib in scales['minor']['libraries']:
+                    report_body += f"\n[ ]{lib}"
+                    report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose)            
+            else: 
+                report_body += "\nNone"
+            report_body += '\n\nMicro updates:'
+            if len(scales['micro']['libraries']) > 0:
+                for lib in scales['micro']['libraries']:
+                    report_body += f"\n[ ]{lib}"
+                    report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose) 
+            else:
+                report_body += "\nNone"
             
             # with open(os.path.join(args.directory,"requirements.txt")) as requirements:
             #     affected_by_outdated_libraries = {}
