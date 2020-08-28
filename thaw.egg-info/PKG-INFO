@@ -1,12 +1,12 @@
 Metadata-Version: 2.1
 Name: thaw
-Version: 1.0.0
+Version: 1.0.1
 Summary: Generates report showing where dependencies affect your project
 Home-page: https://github.com/kateapault/pip-thaw
 Author: Kate Raskauskas
 Author-email: kateapault@gmail.com
 License: UNKNOWN
-Download-URL: https://github.com/kateapault/pip-thaw/archive/v1.0.0.tar.gz
+Download-URL: https://github.com/kateapault/pip-thaw/archive/v1.0.1.tar.gz
 Description: # thaw 
         
         ![PyPI](https://img.shields.io/pypi/v/thaw?color=purple) [![Coverage Status](https://coveralls.io/repos/github/kateapault/pip-thaw/badge.svg?branch=master)](https://coveralls.io/github/kateapault/pip-thaw?branch=master) ![GitHub issues](https://img.shields.io/github/issues/kateapault/pip-thaw) ![PyPI - License](https://img.shields.io/pypi/l/thaw) ![PyPI - Wheel](https://img.shields.io/pypi/wheel/thaw)
@@ -88,7 +88,7 @@ Description: # thaw
         ```
         
         ## Bugs/Requests
-        Please use the [GitHub issue tracker](https://github.com/kateapault/pip-thaw/issues) to submit bugs or request features. 
+        Please use the [GitHub issue tracker](https://github.com/kateapault/pip-thaw/issues) to submit bugs or request features. (If thaw is breaking on a particular repo and you're able to share the repo publically, it would be great if you can include a link to it in your report - if not, no worries.)
         
         You can check planned features on thaw's [GitHub project board](https://github.com/users/kateapault/projects/1).
         
