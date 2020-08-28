@@ -9,4 +9,5 @@ thaw/thaw.py
 thaw.egg-info/PKG-INFO
 thaw.egg-info/SOURCES.txt
 thaw.egg-info/dependency_links.txt
+thaw.egg-info/entry_points.txt
 thaw.egg-info/top_level.txt

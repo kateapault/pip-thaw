@@ -79,7 +79,7 @@ none
 ```
 
 ## Bugs/Requests
-Please use the [GitHub issue tracker](https://github.com/kateapault/pip-thaw/issues) to submit bugs or request features. 
+Please use the [GitHub issue tracker](https://github.com/kateapault/pip-thaw/issues) to submit bugs or request features. (If thaw is breaking on a particular repo and you're able to share the repo publically, it would be great if you can include a link to it in your report - if not, no worries.)
 
 You can check planned features on thaw's [GitHub project board](https://github.com/users/kateapault/projects/1).
 
