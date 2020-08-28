@@ -367,9 +367,14 @@ def main():
             report_summary += f"\t{lib:<40} | {len(affected_by_libraries[lib])} files affected\n"
             report_body += f"\n{lib}"
             report_body += write_report_segment(args.directory,affected_by_libraries[lib],args.verbose)
-    else: 
-        try:
-            libraries = get_libraries_and_versions_from_requirements(os.path.join(args.directory,"requirements.txt"))
+    else:
+        requirements_file = None
+        for item in os.listdir(args.directory):
+            if fnmatch.fnmatch(item,'requirements*.txt'):
+                requirements_file = os.path.join(args.directory,item)
+        
+        if requirements_file:
+            libraries = get_libraries_and_versions_from_requirements(requirements_file)
             affected_by_outdated_libraries = {}            
             for item in libraries:
                 library = item['library']
@@ -470,8 +475,8 @@ def main():
             #             report_body += f"\n[ ]{lib}"
             #             report_body += write_report_segment(args.directory,affected_by_outdated_libraries[lib],args.verbose) 
             
-        except FileNotFoundError:
-            print("No requirements file found - please run thaw in the top level of your project")
+        else:
+            print("No requirements file found - please double check that you are entering the top level of your project, or try using the --imports flag if your project has no requirements file.")
     
     if args.out:
         now = dt.now()
