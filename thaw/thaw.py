@@ -181,7 +181,7 @@ def get_libraries_and_versions_from_requirements(filepath):
     libraries = []
     with open(filepath) as f:
         for line in f:
-            line_text = str(line)
+            line_text = str(line).rstrip()
             if '#' in line_text:
                 line_text = line_text.split('#')[0]
             if len(line_text) > 0: 
