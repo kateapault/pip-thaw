@@ -11,11 +11,14 @@ Installation::
 Usage::
     $ python -m thaw ~/directory/to/search [-h] [-i IMPORTS] [-l LIBRARY] [-o OUT] [-v VERBOSE]
     
+    $ python -m thaw ~/directory/to/search [-dc DEPENDENCY CHECK] <package name> <version to upgrade to>
+    
 Flags::
     --imports                   => searches for libraries in import statements rather than requirements.txt file
     --library [lib1 lib2 ...]   => searches for specified library/ies regardless of version status
     --out [directory path]      => creates report .txt file in specified directory
     --verbose                   => includes line text in report, not just line numbers where outdated libraries are used
+    --dependency-check [package] [new version]  => checks dependency upgrades required by the new version of the package and reports dependency conflicts with other packages
 """
 import argparse
 from datetime import datetime as dt
@@ -335,6 +338,7 @@ def main():
     parser.add_argument('-v','--verbose',action="store_true",help="Include content of lines affected by out-of-date libraries (only line numbers will be written otherwise).")
     parser.add_argument('-l','--library',action="store",nargs='*',help="Search for instances of specified libraries instead of all outdated libraries.")
     parser.add_argument('-i','--imports',action="store_true",help="Check import statements in files instead of requirements.txt.")
+    parser.add_argument('-dc', '--dependecy-check',action="store_true",help="Check for dependency conflicts if upgrading a specific library to a specific new version.")
     args = parser.parse_args()
     
     scales = {
@@ -376,6 +380,40 @@ def main():
             report_summary += f"\t{lib:<40} | {len(affected_by_libraries[lib])} files affected\n"
             report_body += f"\n{lib}"
             report_body += write_report_segment(args.directory,affected_by_libraries[lib],args.verbose)
+    elif args.dependency-check:
+        requirements_file = None
+        for item in os.listdir(args.directory):
+            if fnmatch.fnmatch(item,'requirements*.txt'):
+                requirements_file = os.path.join(args.directory,item)
+        
+        if not requirements_file:
+            raise ValueError("requirements.txt file required")
+        
+        # if listed package not there raise error
+        new_version_dependencies = {}
+        breaking_dependencies = []
+        # pull list of dependencies from pypi for new version
+        # for nv_dependency in nv_dependencies:
+            # new_version_dependencies[nv_dependency[name]] = nv_dependency[version]
+        # for each package in rqmts.txt
+            # if package[name] in new_version_dependencies:
+                # if not does_version_match(package[version], new_version_dependencies[dependencyname]):
+                    # breaking_dependencies.append(package[name])
+                # skip to next
+            # pull dependencies from pypi for listed version (or latest if no listed version)
+            # for dependency in dependencies:
+                # if dependency in new_version_dependencies:
+                    # if not does_version_match(dependency[version], new_version_dependencies[dependencyname]):
+                        # breaking_dependencies.append(f"package[name] (dependency)") # switch order?
+        report_body = ''
+        if not breaking_dependencies:
+            report_body += f"No breaking dependencies found for upgrade of {packagename} to {newversion}."
+            
+        else:
+            report_body += "The following dependency conflicts were found:\n"
+            for dependency in breaking_dependencies:
+                report_body += f"{dependency}\n"
+        print(report_body)
     else:
         requirements_file = None
         for item in os.listdir(args.directory):
