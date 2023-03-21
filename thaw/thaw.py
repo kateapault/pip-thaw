@@ -9,14 +9,20 @@ Installation::
     $ pip install thaw
 
 Usage::
-    $ python -m thaw ~/directory/to/search [-h] [-i IMPORTS] [-l LIBRARY] [-o OUT] [-v VERBOSE]
+    $ python -m thaw [-h] [-i IMPORTS] [-l LIBRARY] [-o OUT] [-v VERBOSE] ~/directory/to/search 
     
+    $ python -m thaw ~/directory/to/search [-dc DEPENDENCY CHECK] <package name> <version to upgrade to>
+
 Flags::
     --imports                   => searches for libraries in import statements rather than requirements.txt file
     --library [lib1 lib2 ...]   => searches for specified library/ies regardless of version status
     --out [directory path]      => creates report .txt file in specified directory
     --verbose                   => includes line text in report, not just line numbers where outdated libraries are used
+    --dependency-check [package] [new version]  => checks dependency upgrades required by the new version of the package and reports dependency conflicts with other packages
 """
+from errors import WrongAssumptionError
+from pypi_utils import get_latest_version_number_from_pypi
+
 import argparse
 from datetime import datetime as dt
 import fnmatch
@@ -26,10 +32,6 @@ import subprocess
 import sys
 from urllib import request
 
-class WrongAssumptionError(Exception):
-    def __init__(self,expression,message):
-        self.expression = expression
-        self.message = message
 
 # -----------------------------------------------------------
 # HELPER FUNCTIONS ------------------------------------------
@@ -43,7 +45,7 @@ def version_update_scale(old_version_string, new_version_string):
     
     major -> 1.x to 2.x
     minor -> 1.4 to 1.7
-    micro ->  1.4.3 to 1.4.4
+    micro -> 1.4.3 to 1.4.4
     """
     old_version = old_version_string.split('.')
     new_version = new_version_string.split('.')
@@ -133,41 +135,6 @@ def get_library_source(library,project_dir):
         except:
             return "other"
 
-# -----------------------------------------------------------
-
-def hacky_parse_for_library_title(html_string):
-    classname_start = html_string.find("package-header__name")
-    
-    inner_start = html_string[classname_start:].find(">")
-    text_start = inner_start + classname_start + 1
-    
-    inner_end = html_string[classname_start:].find("<")
-    text_end = inner_end + classname_start
-    
-    return html_string[text_start:text_end].strip()
-
-# -----------------------------------------------------------
-
-def get_latest_version(library_name):
-    '''
-    Takes in library name as string, looks it up on pypi, and returns 
-    current version number as string
-    '''
-    url = f"https://pypi.org/project/{library_name}/"
-    try:
-        result = request.urlopen(url)
-        binary_data = result.read()
-        data = binary_data.decode('utf-8')
-        fulltitle = hacky_parse_for_library_title(data)
-        try: 
-            name, version = fulltitle.split(' ')
-            return version
-        except:
-            raise WrongAssumptionError('get_latest_version',f"unable to split name and version properly. Full text is: \n{fulltext}")
-            return None
-    except:
-        raise WrongAssumptionError('get_latest_version',f"unable to connect to {url}")
-        return None
 
 # -----------------------------------------------------------
 # PROJECT SEARCH --------------------------------------------
@@ -335,8 +302,9 @@ def main():
     parser.add_argument('-v','--verbose',action="store_true",help="Include content of lines affected by out-of-date libraries (only line numbers will be written otherwise).")
     parser.add_argument('-l','--library',action="store",nargs='*',help="Search for instances of specified libraries instead of all outdated libraries.")
     parser.add_argument('-i','--imports',action="store_true",help="Check import statements in files instead of requirements.txt.")
+    parser.add_argument('-dc', '--dependecy-check',action="store_true",help="Check for dependency conflicts if upgrading a specific library to a specific new version.")
     args = parser.parse_args()
-    
+
     scales = {
         "major": {
             "count":0,
@@ -376,6 +344,40 @@ def main():
             report_summary += f"\t{lib:<40} | {len(affected_by_libraries[lib])} files affected\n"
             report_body += f"\n{lib}"
             report_body += write_report_segment(args.directory,affected_by_libraries[lib],args.verbose)
+    elif args.dependency_check:
+        requirements_file = None
+        for item in os.listdir(args.directory):
+            if fnmatch.fnmatch(item,'requirements*.txt'):
+                requirements_file = os.path.join(args.directory,item)
+        
+        if not requirements_file:
+            raise ValueError("requirements.txt file required")
+        
+        # if listed package not there raise error
+        new_version_dependencies = {}
+        breaking_dependencies = []
+        # pull list of dependencies from pypi for new version
+        # for nv_dependency in nv_dependencies:
+            # new_version_dependencies[nv_dependency[name]] = nv_dependency[version]
+        # for each package in rqmts.txt
+            # if package[name] in new_version_dependencies:
+                # if not does_version_match(package[version], new_version_dependencies[dependencyname]):
+                    # breaking_dependencies.append(package[name])
+                # skip to next
+            # pull dependencies from pypi for listed version (or latest if no listed version)
+            # for dependency in dependencies:
+                # if dependency in new_version_dependencies:
+                    # if not does_version_match(dependency[version], new_version_dependencies[dependencyname]):
+                        # breaking_dependencies.append(f"package[name] (dependency)") # switch order?
+        report_body = ''
+        if not breaking_dependencies:
+            report_body += f"No breaking dependencies found for upgrade of {packagename} to {newversion}."
+            
+        else:
+            report_body += "The following dependency conflicts were found:\n"
+            for dependency in breaking_dependencies:
+                report_body += f"{dependency}\n"
+        print(report_body)
     else:
         requirements_file = None
         for item in os.listdir(args.directory):
@@ -390,7 +392,7 @@ def main():
                 current_version = item['version']
                 source = get_library_source(library,args.directory)
                 if source == 'pypi' and current_version:
-                    latest_version = get_latest_version(library)
+                    latest_version = get_latest_version_number_from_pypi(library)
                 else:
                     latest_version = None
                    
